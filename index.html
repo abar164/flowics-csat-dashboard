@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viz Flowics — CSAT Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --accent: #378ADD;
+  --accent2: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #e3b341;
+  --purple: #bc8cff;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #656d76;
+  --amazing: #3fb950;
+  --great: #378ADD;
+  --neutral: #e3b341;
+  --bad: #f85149;
+  --terrible: #bc8cff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-area { display: flex; align-items: center; gap: 12px; }
+.logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.logo-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+.logo-sub { font-size: 11px; color: var(--text2); font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+
+.nav-area { display: flex; align-items: center; gap: 8px; }
+.nav-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.nav-btn:hover { background: var(--border); color: var(--text); }
+.nav-btn:disabled { opacity: .3; cursor: default; }
+
+.month-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  outline: none;
+}
+.month-select:focus { border-color: var(--accent); }
+
+.live-badge {
+  background: rgba(63,185,80,.12);
+  border: 1px solid rgba(63,185,80,.3);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+  display: none;
+}
+.live-badge.show { display: inline-block; }
+
+/* ── CANVAS ── */
+.canvas { padding: 20px 28px; max-width: 1400px; margin: 0 auto; }
+
+/* ── KPI ROW ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.kpi:hover { border-color: var(--accent); }
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.kpi.green::before { background: var(--green); }
+.kpi.red::before { background: var(--red); }
+.kpi.orange::before { background: var(--orange); }
+.kpi.purple::before { background: var(--purple); }
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 8px;
+}
+.kpi-val {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.kpi-delta {
+  font-size: 10px;
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.kpi-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.card-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title-icon { font-size: 12px; }
+
+/* ── AGENT LIST ── */
+.agent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(48,54,61,.5);
+}
+.agent-row:last-child { border-bottom: none; }
+
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(55,138,221,.12);
+  border: 1px solid rgba(55,138,221,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.avatar.fin {
+  background: rgba(188,140,255,.12);
+  border-color: rgba(188,140,255,.25);
+  color: var(--purple);
+}
+.avatar.me {
+  background: rgba(227,179,65,.12);
+  border-color: rgba(227,179,65,.25);
+  color: var(--orange);
+}
+
+.agent-name { flex: 1; font-size: 12px; font-weight: 500; }
+.agent-volume {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text3);
+  min-width: 28px;
+  text-align: right;
+}
+
+.bar-wrap { width: 60px; }
+.bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width .4s ease; }
+.bar-fill.fin { background: var(--purple); }
+.bar-fill.me { background: var(--orange); }
+
+.csat-tag {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 44px;
+  text-align: right;
+}
+
+/* ── RATING BARS ── */
+.rating-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.rating-label { width: 58px; font-size: 11px; color: var(--text2); }
+.rating-bar { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.rating-fill { height: 100%; border-radius: 4px; transition: width .4s ease; }
+.fill-amazing { background: var(--amazing); }
+.fill-great   { background: var(--great); }
+.fill-neutral { background: var(--neutral); }
+.fill-bad     { background: var(--bad); }
+.fill-terrible{ background: var(--terrible); }
+.fill-ok      { background: var(--text3); }
+.rating-count { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text3); min-width: 24px; text-align: right; }
+
+/* ── REMARKS ── */
+.remark-item {
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(48,54,61,.5);
+}
+.remark-item:last-child { border-bottom: none; }
+.remark-meta {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;
+}
+.badge {
+  padding: 1px 7px; border-radius: 20px;
+  font-size: 9px; font-weight: 600; letter-spacing: .3px;
+}
+.badge.amazing  { background: rgba(63,185,80,.15);  color: var(--amazing); }
+.badge.great    { background: rgba(55,138,221,.15); color: var(--great); }
+.badge.bad      { background: rgba(248,81,73,.15);  color: var(--red); }
+.badge.neutral  { background: rgba(227,179,65,.15); color: var(--orange); }
+.badge.terrible { background: rgba(188,140,255,.15);color: var(--purple); }
+
+.remark-agent { font-size: 10px; font-weight: 600; color: var(--text); }
+.remark-company { font-size: 10px; color: var(--text3); }
+.remark-text { font-size: 11px; color: var(--text2); font-style: italic; line-height: 1.5; }
+
+.remark-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.remark-nav button {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); padding: 3px 10px; border-radius: 5px;
+  font-size: 10px; cursor: pointer; transition: all .15s;
+}
+.remark-nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.remark-nav button:disabled { opacity: .3; cursor: default; }
+.remark-nav span { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text3); }
+
+/* ── FIN AI ── */
+.fin-card {
+  background: linear-gradient(135deg, rgba(188,140,255,.06) 0%, rgba(55,138,221,.06) 100%);
+  border-color: rgba(188,140,255,.2);
+}
+.fin-metric {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(48,54,61,.4);
+}
+.fin-metric:last-child { border-bottom: none; }
+.fin-metric label { font-size: 11px; color: var(--text2); }
+.fin-metric .mval {
+  font-size: 18px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--purple);
+}
+
+/* ── TREND ANNOTATION ── */
+.chart-wrap { position: relative; }
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 10px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.footer span { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+
+/* ── MONTH IN PROGRESS BANNER ── */
+.wip-banner {
+  background: rgba(227,179,65,.08);
+  border: 1px solid rgba(227,179,65,.2);
+  color: var(--orange);
+  font-size: 11px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.wip-banner.show { display: flex; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-equal { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .canvas { padding: 12px 14px; }
+  .header { padding: 12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-area">
+    <div class="logo-dot" id="liveDot" style="display:none"></div>
+    <div>
+      <div class="logo-title">Viz Flowics · Support CSAT</div>
+      <div class="logo-sub" id="headerSub">Loading…</div>
+    </div>
+  </div>
+  <div class="nav-area">
+    <span class="live-badge" id="liveBadge">● LIVE</span>
+    <button class="nav-btn" id="prevBtn" onclick="prevMonth()">&#8249;</button>
+    <select class="month-select" id="monthSelect" onchange="selectMonth(this.value)"></select>
+    <button class="nav-btn" id="nextBtn" onclick="nextMonth()">&#8250;</button>
+  </div>
+</div>
+
+<div class="canvas">
+
+  <div class="wip-banner" id="wipBanner">
+    ⚡ Month in progress — data updates as new ratings come in from Intercom.
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi green">
+      <div class="kpi-label">CSAT Score</div>
+      <div class="kpi-val" id="kpiCsat">—</div>
+      <div class="kpi-delta" id="kpiCsatDelta"></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total Rated</div>
+      <div class="kpi-val" id="kpiTotal">—</div>
+      <div class="kpi-sub" id="kpiTotalSub"></div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Negative Rate</div>
+      <div class="kpi-val" id="kpiNeg">—</div>
+      <div class="kpi-sub" id="kpiNegSub"></div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">Avg Rating</div>
+      <div class="kpi-val" id="kpiAvg">—</div>
+      <div class="kpi-sub">out of 5.0</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Fin AI Rated</div>
+      <div class="kpi-val" id="kpiFin">—</div>
+      <div class="kpi-sub" id="kpiFinSub"></div>
+    </div>
+  </div>
+
+  <!-- Trend + Distribution -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">CSAT Trend — All Months <span class="card-title-icon">📈</span></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Rating Distribution <span class="card-title-icon">🎯</span></div>
+      <div id="ratingBars"></div>
+      <div class="chart-wrap" style="height:100px;margin-top:12px"><canvas id="donutChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Agents + Volume -->
+  <div class="grid-equal">
+    <div class="card">
+      <div class="card-title">Agent Performance <span class="card-title-icon">👥</span></div>
+      <div id="agentList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Volume by Agent <span class="card-title-icon">📊</span></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="agentChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Fin AI + Remarks -->
+  <div class="grid-equal">
+    <div class="card fin-card">
+      <div class="card-title" style="color:var(--purple)">Fin AI Agent <span class="card-title-icon">🤖</span></div>
+      <div id="finMetrics"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Customer Remarks <span class="card-title-icon">💬</span></div>
+      <div id="remarksList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>Viz Flowics Support · CSAT Dashboard</span>
+  <span id="footerTs">Source: Intercom CSAT Export · CSAT_report_Flowics_4.xlsx</span>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA — generated from CSAT_report_Flowics_4.xlsx (Historical + Input sheets)
+// ─────────────────────────────────────────────────────────────────────────────
+const MONTHS = [
+  {key:'2025-08',label:'Aug 2025'},{key:'2025-09',label:'Sep 2025'},
+  {key:'2025-10',label:'Oct 2025'},{key:'2025-11',label:'Nov 2025'},
+  {key:'2025-12',label:'Dec 2025'},{key:'2026-01',label:'Jan 2026'},
+  {key:'2026-02',label:'Feb 2026'},{key:'2026-03',label:'Mar 2026'},
+  {key:'2026-04',label:'Apr 2026'},{key:'2026-05',label:'May 2026'},
+  {key:'2026-06',label:'Jun 2026'}
+];
+
+const DATA = {"2025-08":{"label":"Aug 2025","total":48,"positive":44,"negative":4,"fin":3,"avg":4.62,"csat":91.7,"agents":[{"name":"Emilio Ferraez","total":21,"csat":95.2,"avg":4.86},{"name":"Alejandro Mendoza","total":14,"csat":85.7,"avg":4.43},{"name":"Ubaldo Mancilla","total":9,"csat":88.9,"avg":4.44},{"name":"Fin Ai Agent","total":3,"csat":100.0,"avg":4.33},{"name":"Andres Barraza","total":1,"csat":100.0,"avg":5.0}],"ratings":{"Amazing":40,"Great":4,"Bad":2,"Terrible":2},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"got what I needed. Thank you","company":"Boston Celtics"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio helps me a lot and had patience with me. I calmly decided to put into practice what he explained to me, and when I get stuck again, I will look for him for guidance.","company":"Multimedios"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Great support. Thank you so much!","company":"Surplus Line Association of California"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"amazing guys, just brilliant and super fast. Thank you!","company":"Vizrt Group"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"I'm learning flowics and Emilio and co are very helpful for this step.","company":"inprodtv"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"Ubaldo is such a great guy","company":"Fox Sports Arg-Mediapro"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Excelent","company":"Latina"}]},"2025-09":{"label":"Sep 2025","total":62,"positive":62,"negative":0,"fin":4,"avg":4.76,"csat":100.0,"agents":[{"name":"Emilio Ferraez","total":34,"csat":100.0,"avg":4.74},{"name":"Ubaldo Mancilla","total":16,"csat":100.0,"avg":4.81},{"name":"Alejandro Mendoza","total":8,"csat":100.0,"avg":4.88},{"name":"Fin Ai Agent","total":4,"csat":100.0,"avg":4.5}],"ratings":{"Amazing":47,"Great":15},"remarks":[{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Always love working with Emilio!","company":"Audacy"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"He was diligent","company":"LN+"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"So quick and helpful -- resolved an issue I've been struggling for days in the matter of minutes!","company":"Amazon"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio is a beast! His help is always appreciated","company":"beIN Sports US"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Excellent problem-solving skills","company":"Chilevisión"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"Always a good team!","company":"BCC Live"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Excellent, provides accurate information","company":"Telefonica Servicios Audiovisuales S.A. Peru"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Very quick to respond, attentive, and provided a good solution","company":"ESPN Sur"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"Very helpful, thanks","company":"Warner Bros Discovery US"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio, you're a genius! Always so willing and attentive.","company":"TyC Sports"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Alejandro is very good at explaining tips and solutions as well as understanding what my issue is. He was very informative and knowledgeable and was able to help me quickly.","company":"Keller Williams Realty"}]},"2025-10":{"label":"Oct 2025","total":46,"positive":46,"negative":0,"fin":3,"avg":4.87,"csat":100.0,"agents":[{"name":"Emilio Ferraez","total":26,"csat":100.0,"avg":4.96},{"name":"Alejandro Mendoza","total":10,"csat":100.0,"avg":4.7},{"name":"Ubaldo Mancilla","total":7,"csat":100.0,"avg":4.86},{"name":"Fin Ai Agent","total":3,"csat":100.0,"avg":4.67}],"ratings":{"Amazing":40,"Great":6},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"It was great! Very fast!","company":"LiveMode"},{"agent":"Fin Ai Agent","rating":"Amazing","remark":"Helpful","company":"Universidad del Sagrado Corazón"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"He solved my problem.","company":"UDEM, Universidad de Monterrey"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Excelent","company":"Telefonica Servicios Audiovisuales S.A. Peru"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Excellent and fast","company":"Telefonica Servicios Audiovisuales S.A. Peru"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"awesome quick help","company":"Pro League Network"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"It worked perfectly","company":"Chilevisión"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"He solved my doubts, he's the best.","company":"TELEVISORA NACIONAL SA"}]},"2025-11":{"label":"Nov 2025","total":47,"positive":47,"negative":0,"fin":1,"avg":4.85,"csat":100.0,"agents":[{"name":"Emilio Ferraez","total":23,"csat":100.0,"avg":4.87},{"name":"Alejandro Mendoza","total":16,"csat":100.0,"avg":4.88},{"name":"Ubaldo Mancilla","total":7,"csat":100.0,"avg":4.86},{"name":"Fin Ai Agent","total":1,"csat":100.0,"avg":4.0}],"ratings":{"Amazing":40,"Great":7},"remarks":[{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio is always fantastic!","company":"Audacy"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Thanks for the help","company":"FIBA In the Americas, Inc."},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"It has been excellent. I never imagined you would have such an efficient customer support team. I am truly surprised, congratulations! Ubaldo did a great job.","company":"contacto-cramirez"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Thank you very much. Alejandro as always, very efficient","company":"FIBA In the Americas, Inc."},{"agent":"Emilio Ferraez","rating":"Great","remark":"Emilio, answered the questions clearly","company":"Telefonica"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"I needed the explanation of a component, and Alejandro guided me step by step through what I had to consider. He also shared the links with additional information I needed.","company":"TyC Sports"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Impeccable as always","company":"Canal 4 Jujuy"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Perfect!","company":"Warner Bros. Discovery LatAm"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio did a great job!","company":"ESPN Sur"}]},"2025-12":{"label":"Dec 2025","total":36,"positive":35,"negative":1,"fin":1,"avg":4.89,"csat":97.2,"agents":[{"name":"Alejandro Mendoza","total":17,"csat":100.0,"avg":4.88},{"name":"Emilio Ferraez","total":9,"csat":100.0,"avg":5.0},{"name":"Ubaldo Mancilla","total":9,"csat":100.0,"avg":5.0},{"name":"Fin Ai Agent","total":1,"csat":0.0,"avg":3.0}],"ratings":{"Amazing":33,"Great":2,"Ok":1},"remarks":[{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Loved it thanks","company":"RTL"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"The service has been outstanding. Very helpful and attentive to the issue. A pleasure to work with him.","company":"Fandroid Entertainment SLU"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Quick and excellent solution.","company":"Fandroid Entertainment SLU"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Very fast support.","company":"TVU Networks - Partner, Televisa Univision"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"super helpful, appreciate the team and all of their efforts","company":"livebash"}]},"2026-01":{"label":"Jan 2026","total":63,"positive":61,"negative":2,"fin":6,"avg":4.76,"csat":96.8,"agents":[{"name":"Emilio Ferraez","total":26,"csat":100.0,"avg":4.92},{"name":"Ubaldo Mancilla","total":17,"csat":94.1,"avg":4.71},{"name":"Alejandro Mendoza","total":14,"csat":92.9,"avg":4.64},{"name":"Fin Ai Agent","total":6,"csat":100.0,"avg":4.5}],"ratings":{"Amazing":50,"Great":11,"Bad":1,"Neutral":1},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Excellent help with some tricky font issues!","company":"Yahoo Finance"},{"agent":"Alejandro Mendoza","rating":"Bad","remark":"he did fine but did not solve anything i asked","company":"Yahoo Finance"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Fixed my problem with just what I needed!","company":"NLL"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Always attentive and quick to resolve issues.","company":"ESPN Sur"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"Everything was great.","company":"Fandroid Entertainment SLU"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Alejandro was very attentive and promptly resolved my issue.","company":"LiveMode"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio provided the solution to the issue I experienced.","company":"TyC Sports"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"So helpful! I was so confused about what to do and everything much clearer now.","company":"Happy Graphics, Limitless Broadcast"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"Ubaldo was very helpful.","company":"Arbetsformedlingen"},{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Excellent service!","company":"Fandroid Entertainment SLU"}]},"2026-02":{"label":"Feb 2026","total":68,"positive":68,"negative":0,"fin":9,"avg":4.88,"csat":100.0,"agents":[{"name":"Ubaldo Mancilla","total":30,"csat":100.0,"avg":4.9},{"name":"Emilio Ferraez","total":24,"csat":100.0,"avg":4.92},{"name":"Fin Ai Agent","total":9,"csat":100.0,"avg":4.67},{"name":"Alejandro Mendoza","total":4,"csat":100.0,"avg":5.0},{"name":"Andres Barraza","total":1,"csat":100.0,"avg":5.0}],"ratings":{"Amazing":60,"Great":8},"remarks":[{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Siempre resuelve todas mis dudas","company":"ESPN Sur"},{"agent":"Ubaldo Mancilla","rating":"Amazing","remark":"So helpful and clear","company":"Happy Graphics, Limitless Broadcast"},{"agent":"Andres Barraza","rating":"Amazing","remark":"Muchísimas gracias por la ayuda, de verdad que son el mejor soporte posible","company":"Quality Media"},{"agent":"Fin Ai Agent","rating":"Amazing","remark":"Quick and helpful answer","company":"BCC Live"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"He was very helpful. The AI and docs were not very helpful as following the directions did not work.","company":"ccavins"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Muy buena atencion... pude resolver el inconveniente que tenia","company":"Tigo Sports Paraguay"},{"agent":"Ubaldo Mancilla","rating":"Great","remark":"Ubaldo is really helpful.","company":"Newzroom Afrika"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Muy claros!","company":"Telefonica"}]},"2026-03":{"label":"Mar 2026","total":44,"positive":43,"negative":1,"fin":4,"avg":4.7,"csat":97.7,"agents":[{"name":"Emilio Ferraez","total":32,"csat":100.0,"avg":4.81},{"name":"Alejandro Mendoza","total":6,"csat":100.0,"avg":4.67},{"name":"Fin Ai Agent","total":4,"csat":75.0,"avg":4.0},{"name":"Ubaldo Mancilla","total":2,"csat":100.0,"avg":4.5}],"ratings":{"Amazing":32,"Great":11,"Neutral":1},"remarks":[{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Everything went very well.","company":"TELEVISORA NACIONAL SA"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Excellent","company":"ESPN Sur"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"super helpful and attentive team, I appreciate having an extra set of eyes on my project","company":"Live Bash"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"The Flowics team spent a long time investigating and fixing the problem and restoring our project to a workable state, thank you!","company":"Yahoo Finance"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio is always super helpful and knows his job very well. It's always a pleasure working with him.","company":"Vizrt Group"}]},"2026-04":{"label":"Apr 2026","total":60,"positive":58,"negative":2,"fin":1,"avg":4.77,"csat":96.7,"agents":[{"name":"Emilio Ferraez","total":33,"csat":100.0,"avg":4.85},{"name":"Alejandro Mendoza","total":11,"csat":90.9,"avg":4.64},{"name":"Ubaldo Mancilla","total":9,"csat":100.0,"avg":4.89},{"name":"Shivani Kundra","total":5,"csat":100.0,"avg":4.8},{"name":"Fin Ai Agent","total":2,"csat":50.0,"avg":3.5}],"ratings":{"Amazing":49,"Great":9,"Neutral":1,"Bad":1},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Quick and effective resolution.","company":"LiveMode"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio was quick and excellent in his help as always!","company":"Audacy"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio was great and very helpful. The AI Agent was confused and told me some wrong information but Emilio jumped in to save the day. Thanks","company":"USC Annenberg"},{"agent":"Shivani Kundra","rating":"Amazing","remark":"The issue was resolved immediately.","company":"ESPN Sur"},{"agent":"Alejandro Mendoza","rating":"Bad","remark":"When I reach out for help, I expect HELP. Not 'we're looking at it' with no follow up, no response, no advancement of the issue. Literally nothing was done from our point of view and we had two shows severely degraded as a result.","company":"Yahoo Finance"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"great service i received","company":"austintripp421"},{"agent":"Emilio Ferraez","rating":"Great","remark":"Emilio is always helpful.","company":"Chess.com"}]},"2026-05":{"label":"May 2026","total":42,"positive":41,"negative":1,"fin":2,"avg":4.83,"csat":97.6,"agents":[{"name":"Emilio Ferraez","total":16,"csat":100.0,"avg":5.0},{"name":"Alejandro Mendoza","total":14,"csat":100.0,"avg":5.0},{"name":"Ubaldo Mancilla","total":8,"csat":87.5,"avg":4.5},{"name":"Fin Ai Agent","total":2,"csat":100.0,"avg":4.5},{"name":"Andrés Barraza","total":1,"csat":100.0,"avg":4.0},{"name":"Shivani Kundra","total":1,"csat":100.0,"avg":4.0}],"ratings":{"Amazing":37,"Great":4,"Bad":1},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Super attentive and resolved the issue.","company":"ESPN Sur"},{"agent":"Ubaldo Mancilla","rating":"Bad","remark":"Was only told that our issue had been passed onto RnD. No other advice given. Kept reporting issues, still only message about RnD. More updates would have been good, especially when there are changes being made.","company":"Australian News Channel (Sky News)"},{"agent":"Emilio Ferraez","rating":"Amazing","remark":"Emilio assisted me after I encountered an error. Following his guidance, I was able to continue with my work, and the error was resolved.","company":"Telered Imagen SA (TyC Sports)"}]},"2026-06":{"label":"Jun 2026","total":18,"positive":18,"negative":0,"fin":0,"avg":4.89,"csat":100.0,"agents":[{"name":"Alejandro Mendoza","total":9,"csat":100.0,"avg":5.0},{"name":"Emilio Ferraez","total":7,"csat":100.0,"avg":5.0},{"name":"Shivani Kundra","total":2,"csat":100.0,"avg":4.0}],"ratings":{"Amazing":16,"Great":2},"remarks":[{"agent":"Alejandro Mendoza","rating":"Amazing","remark":"Alejandro has sincerely been incredible! He has helped me greatly with these last few issues myself and the team have been running into.","company":"Telemundo Network Group LLC"}]}};
+
+const CURRENT_MONTH = '2026-06'; // update when you refresh the file
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let currentIdx = MONTHS.length - 1;
+let remarksPage = 0;
+const REMARKS_PER_PAGE = 4;
+let trendChart, donutChart, agentChart;
+
+const ME_NAMES = ['Andres Barraza', 'Andrés Barraza'];
+const FIN_NAMES = ['Fin Ai Agent', 'Fin AI Agent'];
+
+function isFin(name) { return FIN_NAMES.some(f => f.toLowerCase() === name.toLowerCase()); }
+function isMe(name)  { return ME_NAMES.some(f => f.toLowerCase() === name.toLowerCase()); }
+
+function getInitials(name) {
+  if (isFin(name)) return 'AI';
+  return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+
+function avatarClass(name) {
+  if (isFin(name)) return 'fin';
+  if (isMe(name))  return 'me';
+  return '';
+}
+
+function barFillClass(name) {
+  if (isFin(name)) return 'fin';
+  if (isMe(name))  return 'me';
+  return '';
+}
+
+function delta(curr, prev, suffix='%', invert=false) {
+  if (prev == null) return '';
+  const d = curr - prev;
+  const positive = invert ? d < 0 : d >= 0;
+  const color = d === 0 ? 'var(--text3)' : positive ? 'var(--green)' : 'var(--red)';
+  const sign = d > 0 ? '+' : '';
+  return `<span style="color:${color}">${sign}${d.toFixed(1)}${suffix} vs prev</span>`;
+}
+
+function csatColor(v) {
+  if (v >= 98) return 'var(--green)';
+  if (v >= 90) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT SELECT
+// ─────────────────────────────────────────────────────────────────────────────
+function initSelect() {
+  const sel = document.getElementById('monthSelect');
+  MONTHS.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.key;
+    opt.textContent = m.label;
+    sel.appendChild(opt);
+  });
+  sel.value = MONTHS[currentIdx].key;
+}
+
+function selectMonth(key) {
+  currentIdx = MONTHS.findIndex(m => m.key === key);
+  remarksPage = 0;
+  render();
+}
+function prevMonth() {
+  if (currentIdx > 0) { currentIdx--; document.getElementById('monthSelect').value = MONTHS[currentIdx].key; remarksPage=0; render(); }
+}
+function nextMonth() {
+  if (currentIdx < MONTHS.length-1) { currentIdx++; document.getElementById('monthSelect').value = MONTHS[currentIdx].key; remarksPage=0; render(); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+function render() {
+  const mk = MONTHS[currentIdx].key;
+  const d  = DATA[mk];
+  const prev = currentIdx > 0 ? DATA[MONTHS[currentIdx-1].key] : null;
+  const isCurrentMonth = mk === CURRENT_MONTH;
+  const isLastMonthInData = currentIdx === MONTHS.length - 1;
+
+  // Nav buttons
+  document.getElementById('prevBtn').disabled = currentIdx === 0;
+  document.getElementById('nextBtn').disabled = currentIdx === MONTHS.length - 1;
+
+  // Live badge + WIP banner
+  const liveBadge = document.getElementById('liveBadge');
+  const liveDot   = document.getElementById('liveDot');
+  const wipBanner = document.getElementById('wipBanner');
+  if (isLastMonthInData) {
+    liveBadge.classList.add('show');
+    liveDot.style.display = 'block';
+    wipBanner.classList.add('show');
+  } else {
+    liveBadge.classList.remove('show');
+    liveDot.style.display = 'none';
+    wipBanner.classList.remove('show');
+  }
+
+  // Header sub
+  document.getElementById('headerSub').textContent =
+    `${d.label} · ${d.total} conversations rated`;
+
+  // ── KPIs ──
+  document.getElementById('kpiCsat').textContent = d.csat + '%';
+  document.getElementById('kpiCsat').style.color = csatColor(d.csat);
+  document.getElementById('kpiCsatDelta').innerHTML = delta(d.csat, prev?.csat);
+  document.getElementById('kpiTotal').textContent = d.total;
+  document.getElementById('kpiTotalSub').textContent = `${d.positive} positive`;
+  document.getElementById('kpiNeg').textContent = d.total > 0 ? (d.negative/d.total*100).toFixed(1)+'%' : '—';
+  document.getElementById('kpiNegSub').textContent = `${d.negative} negative`;
+  document.getElementById('kpiAvg').textContent = d.avg;
+  document.getElementById('kpiFin').textContent = d.fin;
+  document.getElementById('kpiFinSub').textContent = d.total > 0 ? `${(d.fin/d.total*100).toFixed(1)}% of total` : '';
+
+  // ── TREND CHART ──
+  const trendKeys   = MONTHS.map(m => m.key);
+  const trendLabels = MONTHS.map(m => m.label);
+  const trendCsat   = MONTHS.map(m => DATA[m.key]?.csat ?? null);
+  const trendVol    = MONTHS.map(m => DATA[m.key]?.total ?? null);
+  const pointColors = trendKeys.map((k,i) => i===currentIdx ? '#f85149' : '#378ADD');
+  const pointRadius = trendKeys.map((k,i) => i===currentIdx ? 7 : 3);
+
+  if (trendChart) {
+    trendChart.data.datasets[0].pointBackgroundColor = pointColors;
+    trendChart.data.datasets[0].pointRadius = pointRadius;
+    trendChart.update('none');
+  } else {
+    trendChart = new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          data: trendCsat,
+          borderColor: '#378ADD',
+          backgroundColor: 'rgba(55,138,221,0.06)',
+          borderWidth: 2,
+          pointRadius, pointBackgroundColor: pointColors,
+          tension: 0.3, fill: true, spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+            callbacks: { label: ctx => ' CSAT: ' + ctx.parsed.y.toFixed(1) + '%' }
+          }
+        },
+        scales: {
+          y: {
+            min: 85, max: 102,
+            ticks: { callback: v=>v+'%', font:{size:10}, color:'#8b949e' },
+            grid: { color: 'rgba(48,54,61,.4)' }
+          },
+          x: {
+            ticks: { font:{size:9}, maxRotation:45, color:'#8b949e' },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  // ── RATING BARS + DONUT ──
+  const RATING_ORDER = ['Amazing','Great','Neutral','Ok','Bad','Terrible'];
+  const FILL_CLASS = {Amazing:'fill-amazing',Great:'fill-great',Neutral:'fill-neutral',Ok:'fill-ok',Bad:'fill-bad',Terrible:'fill-terrible'};
+  const maxR = Math.max(1, ...Object.values(d.ratings));
+  let rbHtml = '';
+  RATING_ORDER.forEach(r => {
+    const cnt = d.ratings[r] || 0;
+    if (cnt === 0) return;
+    const pct = (cnt/maxR*100).toFixed(0);
+    rbHtml += `<div class="rating-item">
+      <span class="rating-label">${r}</span>
+      <div class="rating-bar"><div class="rating-fill ${FILL_CLASS[r]||'fill-ok'}" style="width:${pct}%"></div></div>
+      <span class="rating-count">${cnt}</span>
+    </div>`;
+  });
+  document.getElementById('ratingBars').innerHTML = rbHtml;
+
+  const RATING_COLORS = {Amazing:'#3fb950',Great:'#378ADD',Neutral:'#e3b341',Ok:'#656d76',Bad:'#f85149',Terrible:'#bc8cff'};
+  const rLabels = RATING_ORDER.filter(r => (d.ratings[r]||0)>0);
+  const rData   = rLabels.map(r => d.ratings[r]);
+  const rColors = rLabels.map(r => RATING_COLORS[r]);
+  if (donutChart) {
+    donutChart.data.labels = rLabels;
+    donutChart.data.datasets[0].data = rData;
+    donutChart.data.datasets[0].backgroundColor = rColors;
+    donutChart.update('none');
+  } else {
+    donutChart = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: { labels: rLabels, datasets: [{ data: rData, backgroundColor: rColors, borderWidth: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+          legend: { position:'right', labels:{ font:{size:10}, color:'#8b949e', boxWidth:10, padding:6 } },
+          tooltip: { backgroundColor:'#161b22', borderColor:'#30363d', borderWidth:1 }
+        }
+      }
+    });
+  }
+
+  // ── AGENT LIST ──
+  const maxA = Math.max(1, ...d.agents.map(a=>a.total));
+  let aHtml = '';
+  d.agents.forEach(a => {
+    const pct = (a.total/maxA*100).toFixed(0);
+    const cc  = csatColor(a.csat);
+    const ini = getInitials(a.name);
+    const ac  = avatarClass(a.name);
+    const bc  = barFillClass(a.name);
+    aHtml += `<div class="agent-row">
+      <div class="avatar ${ac}">${ini}</div>
+      <span class="agent-name">${a.name}</span>
+      <span class="agent-volume">${a.total}</span>
+      <div class="bar-wrap"><div class="bar"><div class="bar-fill ${bc}" style="width:${pct}%"></div></div></div>
+      <span class="csat-tag" style="color:${cc}">${a.csat}%</span>
+    </div>`;
+  });
+  document.getElementById('agentList').innerHTML = aHtml;
+
+  // ── AGENT BAR CHART ──
+  const agLabels = d.agents.map(a => {
+    if (isFin(a.name)) return 'Fin AI';
+    const parts = a.name.split(' ');
+    return parts[0] + (parts[1] ? ' ' + parts[1][0] + '.' : '');
+  });
+  const agPos = d.agents.map(a => Math.round(a.total * a.csat/100));
+  const agNeg = d.agents.map(a => a.total - Math.round(a.total * a.csat/100));
+
+  if (agentChart) {
+    agentChart.data.labels = agLabels;
+    agentChart.data.datasets[0].data = agPos;
+    agentChart.data.datasets[1].data = agNeg;
+    agentChart.update('none');
+  } else {
+    agentChart = new Chart(document.getElementById('agentChart'), {
+      type: 'bar',
+      data: { labels: agLabels, datasets: [
+        { label:'Positive', data:agPos, backgroundColor:'#378ADD', borderRadius:4 },
+        { label:'Negative', data:agNeg, backgroundColor:'rgba(248,81,73,.4)', borderRadius:4 }
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels:{ font:{size:10}, color:'#8b949e', boxWidth:10 } },
+          tooltip: { backgroundColor:'#161b22', borderColor:'#30363d', borderWidth:1 }
+        },
+        scales: {
+          x: { stacked:true, ticks:{font:{size:10},color:'#8b949e'}, grid:{display:false} },
+          y: { stacked:true, ticks:{font:{size:10},color:'#8b949e'}, grid:{color:'rgba(48,54,61,.4)'} }
+        }
+      }
+    });
+  }
+
+  // ── FIN AI ──
+  const finAgent = d.agents.find(a => isFin(a.name));
+  document.getElementById('finMetrics').innerHTML = finAgent
+    ? `<div class="fin-metric"><label>Conversations rated</label><span class="mval">${finAgent.total}</span></div>
+       <div class="fin-metric"><label>CSAT Score</label><span class="mval" style="color:${csatColor(finAgent.csat)}">${finAgent.csat}%</span></div>
+       <div class="fin-metric"><label>Share of volume</label><span class="mval">${d.total>0?(finAgent.total/d.total*100).toFixed(1):0}%</span></div>
+       <div class="fin-metric"><label>Avg rating</label><span class="mval">${finAgent.avg} / 5</span></div>`
+    : `<div class="fin-metric"><label>No Fin AI ratings this month</label><span class="mval">—</span></div>`;
+
+  // ── REMARKS ──
+  renderRemarks(d);
+}
+
+function renderRemarks(d) {
+  const BADGE_CLASS = {Amazing:'amazing',Great:'great',Bad:'bad',Neutral:'neutral',Terrible:'terrible'};
+  const total = d.remarks.length;
+  if (total === 0) {
+    document.getElementById('remarksList').innerHTML =
+      '<p style="color:var(--text3);font-size:11px;padding:8px 0;">No remarks with text this month.</p>';
+    return;
+  }
+  const totalPages = Math.ceil(total/REMARKS_PER_PAGE);
+  const start = remarksPage * REMARKS_PER_PAGE;
+  const end   = Math.min(start + REMARKS_PER_PAGE, total);
+  const slice = d.remarks.slice(start, end);
+
+  let html = '';
+  slice.forEach(r => {
+    const bc = BADGE_CLASS[r.rating] || 'amazing';
+    html += `<div class="remark-item">
+      <div class="remark-meta">
+        <span class="badge ${bc}">${r.rating}</span>
+        <span class="remark-agent">${r.agent.split(' ')[0]}</span>
+        <span class="remark-company">· ${r.company}</span>
+      </div>
+      <div class="remark-text">"${r.remark}"</div>
+    </div>`;
+  });
+
+  if (totalPages > 1) {
+    html += `<div class="remark-nav">
+      <button onclick="changeRemarks(-1)" ${remarksPage===0?'disabled':''}>&#8249; Prev</button>
+      <span>${start+1}–${end} of ${total}</span>
+      <button onclick="changeRemarks(1)" ${remarksPage>=totalPages-1?'disabled':''}>Next &#8250;</button>
+    </div>`;
+  }
+  document.getElementById('remarksList').innerHTML = html;
+}
+
+function changeRemarks(dir) {
+  const d = DATA[MONTHS[currentIdx].key];
+  const totalPages = Math.ceil(d.remarks.length/REMARKS_PER_PAGE);
+  remarksPage = Math.max(0, Math.min(remarksPage+dir, totalPages-1));
+  renderRemarks(d);
+}
+
+// Footer timestamp
+document.getElementById('footerTs').textContent =
+  'Source: Intercom CSAT Export · Updated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+initSelect();
+render();
+</script>
+
+</body>
+</html>
