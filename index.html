@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Viz Flowics — CSAT Dashboard v3</title>
+<title>Viz Flowics — CSAT Dashboard v5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -49,45 +49,55 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 /* CANVAS */
 .canvas { padding:18px 28px;max-width:1400px;margin:0 auto; }
 
-/* EXECUTIVE SUMMARY */
-.exec-summary {
-  background:linear-gradient(135deg,rgba(55,138,221,.08) 0%,rgba(63,185,80,.06) 100%);
-  border:1px solid rgba(55,138,221,.2);
-  border-radius:10px; padding:16px 20px; margin-bottom:16px;
-}
-.exec-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:10px; }
-.exec-title { font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.8px; }
-.exec-month { font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace; }
-.exec-bullets { display:flex;flex-direction:column;gap:5px; }
-.exec-bullet { display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);line-height:1.5; }
-.exec-icon { font-size:13px;flex-shrink:0;margin-top:1px; }
-
 /* WIP */
 .wip-banner { background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.2);color:var(--orange);font-size:11px;padding:8px 14px;border-radius:8px;margin-bottom:14px;display:none;align-items:center;gap:8px; }
 .wip-banner.show { display:flex; }
 
-/* TOP ROW: Exec Summary + Attention */
-.top-row { display:grid;grid-template-columns:2.2fr 1fr;gap:12px;margin-bottom:14px;align-items:stretch; }
-.attention-card { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column; }
-.attention-title { font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px; }
-.attention-list { display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center; }
-.attention-item { display:flex;align-items:flex-start;gap:8px;font-size:11.5px;line-height:1.5;padding:7px 10px;border-radius:7px; }
-.attention-item.ok   { background:rgba(63,185,80,.07);color:#9be8ab; }
-.attention-item.warn { background:rgba(227,179,65,.08);color:#f0d999; }
-.attention-item.bad  { background:rgba(248,81,73,.08);color:#ffb3ae; }
-.attention-icon { flex-shrink:0; }
+/* EXECUTIVE SUMMARY (merged with Attention) — full width */
+.exec-summary {
+  background:linear-gradient(135deg,rgba(55,138,221,.14) 0%,rgba(63,185,80,.08) 100%);
+  border:1px solid rgba(55,138,221,.3);
+  border-radius:12px; padding:22px 26px; margin-bottom:14px;
+  position:relative; overflow:hidden;
+}
+.exec-summary::before {
+  content:''; position:absolute; top:0; left:0; bottom:0; width:4px;
+  background:linear-gradient(180deg,var(--accent),var(--green));
+}
+.exec-header { display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px; }
+.exec-title-group { display:flex; align-items:baseline; gap:12px; }
+.exec-title { font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px; }
+.exec-headline { font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;color:var(--text); }
+.exec-headline-delta { font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;margin-left:8px; }
+.exec-month { font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace; }
+.exec-stats-row { display:flex; gap:18px; margin-bottom:14px; flex-wrap:wrap; }
+.exec-stat { font-size:12px; color:var(--text2); }
+.exec-stat strong { color:var(--text); font-family:'JetBrains Mono',monospace; }
+.exec-bullets { display:flex;flex-direction:column;gap:5px; margin-bottom:12px; }
+.exec-bullet { display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);line-height:1.6; }
+.exec-icon { font-size:14px;flex-shrink:0;margin-top:1px; }
 
-/* GOALS SEMAPHORE */
-.goal-semaphore { display:flex;flex-direction:column;gap:0; }
-.semaphore-row { display:flex;align-items:center;justify-content:space-between;padding:7px 2px;border-bottom:1px solid rgba(48,54,61,.4); }
-.semaphore-row:last-child { border-bottom:none; }
-.semaphore-label { font-size:11.5px;color:var(--text2); }
-.semaphore-right { display:flex;align-items:center;gap:8px; }
-.semaphore-val { font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text); }
-.semaphore-dot { width:9px;height:9px;border-radius:50%;flex-shrink:0; }
-.semaphore-dot.green  { background:var(--green); box-shadow:0 0 6px rgba(63,185,80,.6); }
-.semaphore-dot.yellow { background:var(--orange);box-shadow:0 0 6px rgba(227,179,65,.6); }
-.semaphore-dot.red    { background:var(--red);   box-shadow:0 0 6px rgba(248,81,73,.6); }
+/* Inline alert pills — replaces the old standalone Attention card */
+.exec-alerts { display:flex; gap:8px; flex-wrap:wrap; }
+.alert-pill { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:500; padding:6px 12px; border-radius:20px; }
+.alert-pill.ok   { background:rgba(63,185,80,.12); border:1px solid rgba(63,185,80,.3); color:#9be8ab; }
+.alert-pill.warn { background:rgba(227,179,65,.12); border:1px solid rgba(227,179,65,.35); color:#f0d999; }
+.alert-pill.bad  { background:rgba(248,81,73,.16); border:1px solid rgba(248,81,73,.45); color:#ffc4bf; font-weight:600; }
+
+/* GOALS — progress bar version */
+.goal-semaphore { display:flex;flex-direction:column;gap:14px; }
+.goal-row { display:flex; flex-direction:column; gap:7px; }
+.goal-row-top { display:flex; align-items:center; justify-content:space-between; }
+.goal-row-label { font-size:11.5px; color:var(--text2); font-weight:500; }
+.goal-row-right { display:flex; align-items:center; gap:7px; }
+.goal-row-status-icon { font-size:12px; }
+.goal-row-target { font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; }
+.goal-progress-track { height:9px; border-radius:5px; background:var(--surface2); overflow:hidden; position:relative; }
+.goal-progress-fill { height:100%; border-radius:5px; transition:width .5s ease; }
+.goal-progress-fill.green  { background:linear-gradient(90deg,#2ea043,#3fb950); }
+.goal-progress-fill.yellow { background:linear-gradient(90deg,#bb8009,#e3b341); }
+.goal-progress-fill.red    { background:linear-gradient(90deg,#d1342b,#f85149); }
+.goal-progress-marker { position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,.6); }
 
 /* KPI ROW */
 .kpi-row { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px; }
@@ -100,7 +110,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .kpi.purple::before { background:var(--purple); }
 .kpi.teal::before { background:#2dd4bf; }
 .kpi-label { font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px; }
-.kpi-val { font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1; }
+.kpi-val { font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1; }
 .kpi-delta { font-size:10px;margin-top:5px;font-family:'JetBrains Mono',monospace; }
 .kpi-sub { font-size:10px;color:var(--text3);margin-top:3px; }
 .kpi-goal { display:inline-flex;align-items:center;gap:4px;font-size:10px;margin-top:5px;padding:2px 7px;border-radius:20px;font-weight:500; }
@@ -115,16 +125,15 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 
 /* CARDS */
 .card { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px; }
-.card-title { font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+.card-title { font-size:10.5px;font-weight:600;color:#a8b3bd;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
 .card-actions { display:flex;gap:6px; }
 .toggle-btn { background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:2px 8px;border-radius:4px;font-size:10px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif; }
 .toggle-btn.active { background:rgba(55,138,221,.15);border-color:rgba(55,138,221,.3);color:var(--accent); }
 .toggle-btn:hover { color:var(--text); }
 
 /* AGENT LIST */
-.agent-row { display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.5);cursor:pointer;border-radius:4px;padding-left:4px;transition:background .15s; }
-.agent-row:hover { background:rgba(55,138,221,.05); }
-.agent-row:last-child { border-bottom:none; }
+.agent-row { display:flex;align-items:center;gap:10px;padding:9px 0;cursor:pointer;border-radius:6px;padding-left:4px;transition:background .15s; }
+.agent-row:hover { background:rgba(55,138,221,.06); }
 .avatar { width:28px;height:28px;border-radius:50%;background:rgba(55,138,221,.12);border:1px solid rgba(55,138,221,.25);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--accent);flex-shrink:0;font-family:'JetBrains Mono',monospace; }
 .avatar.fin { background:rgba(188,140,255,.12);border-color:rgba(188,140,255,.25);color:var(--purple); }
 .avatar.me  { background:rgba(227,179,65,.12);border-color:rgba(227,179,65,.25);color:var(--orange); }
@@ -162,8 +171,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .highlight-text { font-size:11px;color:var(--text2);font-style:italic;line-height:1.5;margin-bottom:6px; }
 .highlight-meta { font-size:10px;color:var(--text3); }
 
-.remark-item { padding:8px 0;border-bottom:1px solid rgba(48,54,61,.5); }
-.remark-item:last-child { border-bottom:none; }
+.remark-item { padding:11px 0; }
 .remark-meta { display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap; }
 .badge { padding:1px 7px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:.3px; }
 .badge.amazing  { background:rgba(63,185,80,.15);color:#3fb950; }
@@ -183,8 +191,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 
 /* FIN AI */
 .fin-card { background:linear-gradient(135deg,rgba(188,140,255,.06) 0%,rgba(55,138,221,.06) 100%);border-color:rgba(188,140,255,.2); }
-.fin-metric { display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(48,54,61,.4); }
-.fin-metric:last-child { border-bottom:none; }
+.fin-metric { display:flex;justify-content:space-between;align-items:center;padding:10px 0; }
 .fin-metric label { font-size:11px;color:var(--text2); }
 .fin-metric .mval { font-size:17px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--purple); }
 .fin-metric .mval.green { color:var(--green); }
@@ -212,8 +219,40 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .footer { background:var(--surface);border-top:1px solid var(--border);padding:10px 28px;display:flex;justify-content:space-between;align-items:center;margin-top:8px; }
 .footer span { font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace; }
 
-@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-equal,.top-row{grid-template-columns:1fr}.highlight-remarks{grid-template-columns:1fr}}
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-equal{grid-template-columns:1fr}.highlight-remarks{grid-template-columns:1fr}}
 @media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr)}.canvas{padding:12px 14px}.header{padding:12px 14px}}
+
+/* ── TABS ── */
+.tab-bar { display:flex; gap:4px; padding:0 28px; background:var(--surface); border-bottom:1px solid var(--border); }
+.tab-btn {
+  background:none; border:none; color:var(--text2);
+  padding:11px 16px; font-size:12.5px; font-weight:500;
+  font-family:'Inter',sans-serif; cursor:pointer;
+  border-bottom:2px solid transparent; transition:all .15s;
+}
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ── OPS METRICS ── */
+.ops-section-title {
+  font-size:11px; font-weight:600; color:var(--accent);
+  text-transform:uppercase; letter-spacing:1px;
+  margin:18px 0 10px 0; padding-bottom:6px;
+  border-bottom:1px solid rgba(55,138,221,.2);
+}
+.ops-section-title:first-child { margin-top:0; }
+.ops-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:6px; }
+.ops-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; transition:border-color .2s; }
+.ops-card:hover { border-color:var(--accent); }
+.ops-label { font-size:10px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.6px; margin-bottom:7px; }
+.ops-val { font-size:21px; font-weight:700; font-family:'JetBrains Mono',monospace; letter-spacing:-.5px; line-height:1; }
+.ops-delta { font-size:10px; margin-top:6px; font-family:'JetBrains Mono',monospace; }
+.ops-pending { background:var(--surface); border:1px dashed var(--border); border-radius:10px; padding:16px; text-align:center; color:var(--text3); font-size:11px; margin-bottom:14px; }
+
+@media(max-width:1100px){.ops-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.ops-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -235,24 +274,33 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   </div>
 </div>
 
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabCsatBtn" onclick="switchTab('csat')">CSAT Dashboard</button>
+  <button class="tab-btn" id="tabOpsBtn" onclick="switchTab('ops')">Operations Metrics</button>
+</div>
+
 <div class="canvas">
+
+  <div class="tab-panel active" id="csatPanel">
 
   <!-- WIP BANNER -->
   <div class="wip-banner" id="wipBanner">⚡ Month in progress — data updates as new ratings come in from Intercom.</div>
 
-  <!-- TOP ROW: EXEC SUMMARY + ATTENTION -->
-  <div class="top-row">
-    <div class="exec-summary" id="execSummary">
-      <div class="exec-header">
+  <!-- EXECUTIVE SUMMARY (merged with Attention) -->
+  <div class="exec-summary" id="execSummary">
+    <div class="exec-header">
+      <div class="exec-title-group">
         <span class="exec-title">📋 Executive Summary</span>
-        <span class="exec-month" id="execMonth"></span>
       </div>
-      <div class="exec-bullets" id="execBullets"></div>
+      <span class="exec-month" id="execMonth"></span>
     </div>
-    <div class="attention-card">
-      <div class="attention-title">🚨 Attention</div>
-      <div class="attention-list" id="attentionList"></div>
+    <div style="margin-bottom:14px;">
+      <span class="exec-headline" id="execHeadline">—</span>
+      <span class="exec-headline-delta" id="execHeadlineDelta"></span>
     </div>
+    <div class="exec-stats-row" id="execStatsRow"></div>
+    <div class="exec-bullets" id="execBullets"></div>
+    <div class="exec-alerts" id="execAlerts"></div>
   </div>
 
   <!-- KPIs (5) -->
@@ -285,24 +333,24 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
     </div>
   </div>
 
-  <!-- GOALS SEMAPHORE -->
+  <!-- TREND — FULL WIDTH -->
   <div class="card" style="margin-bottom:12px">
-    <div class="card-title" style="margin-bottom:8px">Performance vs Goals <span style="font-size:12px">🎯</span></div>
-    <div class="goal-semaphore" id="goalSemaphore"></div>
+    <div class="card-title">
+      CSAT Trend & Volume <span style="font-size:15px">📈</span>
+    </div>
+    <div style="position:relative;height:230px"><canvas id="trendChart"></canvas></div>
   </div>
 
-  <!-- TREND + DISTRIBUTION -->
-  <div class="grid-2">
+  <!-- GOALS + DISTRIBUTION -->
+  <div class="grid-equal">
     <div class="card">
-      <div class="card-title">
-        CSAT Trend & Volume <span style="font-size:12px">📈</span>
-      </div>
-      <div style="position:relative;height:210px"><canvas id="trendChart"></canvas></div>
+      <div class="card-title" style="margin-bottom:8px">Performance vs Goals <span style="font-size:15px">🎯</span></div>
+      <div class="goal-semaphore" id="goalSemaphore"></div>
     </div>
     <div class="card">
-      <div class="card-title">Rating Distribution <span style="font-size:12px">🎯</span></div>
+      <div class="card-title">Rating Distribution <span style="font-size:15px">🎯</span></div>
       <div id="ratingBars"></div>
-      <div style="position:relative;height:95px;margin-top:10px"><canvas id="donutChart"></canvas></div>
+      <div style="position:relative;height:110px;margin-top:10px"><canvas id="donutChart"></canvas></div>
     </div>
   </div>
 
@@ -310,14 +358,14 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   <div class="grid-equal">
     <div class="card">
       <div class="card-title">
-        Agent Performance <span style="font-size:12px">👥</span>
+        Agent Performance <span style="font-size:15px">👥</span>
         <div class="card-actions"><span style="font-size:9px;color:var(--text3);align-self:center">Click agent for drill-down</span></div>
       </div>
       <div id="agentList"></div>
     </div>
     <div class="card">
       <div class="card-title">
-        Agent Analysis <span style="font-size:12px">📊</span>
+        Agent Analysis <span style="font-size:15px">📊</span>
         <div class="card-actions">
           <button class="toggle-btn active" id="btnBars" onclick="setAgentView('bars')">Bars</button>
           <button class="toggle-btn" id="btnScatter" onclick="setAgentView('scatter')">CSAT vs Volume</button>
@@ -330,22 +378,62 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   <!-- FIN AI + REMARKS -->
   <div class="grid-equal">
     <div class="card fin-card">
-      <div class="card-title" style="color:var(--purple)">Fin AI Agent <span style="font-size:12px">🤖</span></div>
+      <div class="card-title" style="color:var(--purple)">Fin AI Agent <span style="font-size:15px">🤖</span></div>
       <div id="finMetrics"></div>
       <div id="finPending" style="font-size:10px;color:var(--text3);padding-top:8px;line-height:1.6;"></div>
     </div>
     <div class="card">
-      <div class="card-title">Customer Remarks <span style="font-size:12px">💬</span></div>
+      <div class="card-title">Customer Remarks <span style="font-size:15px">💬</span></div>
       <div class="highlight-remarks" id="highlightRemarks"></div>
       <div class="remarks-filter" id="remarksFilter"></div>
       <div id="remarksList"></div>
     </div>
   </div>
 
+  </div><!-- /csatPanel -->
+
+  <div class="tab-panel" id="opsPanel">
+    <div id="opsPendingBanner" class="ops-pending" style="display:none;"></div>
+
+    <div class="ops-section-title">⚡ Speed</div>
+    <div class="ops-grid">
+      <div class="ops-card"><div class="ops-label">First Response Time</div><div class="ops-val" id="opsFrt">—</div><div class="ops-delta" id="opsFrtDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Resolution Time</div><div class="ops-val" id="opsResTime">—</div><div class="ops-delta" id="opsResTimeDelta"></div></div>
+    </div>
+
+    <div class="ops-section-title">🔧 Operations</div>
+    <div class="ops-grid">
+      <div class="ops-card"><div class="ops-label">New Incoming Cases</div><div class="ops-val" id="opsNewCases">—</div><div class="ops-delta" id="opsNewCasesDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Closed Conversations</div><div class="ops-val" id="opsClosedConv">—</div><div class="ops-delta" id="opsClosedConvDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Resolution Rate</div><div class="ops-val" id="opsResRate">—</div><div class="ops-delta" id="opsResRateDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Chat Volume %</div><div class="ops-val" id="opsChatPct">—</div><div class="ops-delta" id="opsChatPctDelta"></div></div>
+    </div>
+    <div style="position:relative;height:180px;margin:10px 0 4px"><canvas id="opsChannelChart"></canvas></div>
+
+    <div class="ops-section-title">🎯 QA</div>
+    <div class="ops-grid">
+      <div class="ops-card"><div class="ops-label">Surveys Sent</div><div class="ops-val" id="opsSurveys">—</div><div class="ops-delta" id="opsSurveysDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Conversations Rated</div><div class="ops-val" id="opsConvRated">—</div><div class="ops-delta" id="opsConvRatedDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Survey Response Rate</div><div class="ops-val" id="opsRespRate">—</div><div class="ops-delta" id="opsRespRateDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">CSAT Score</div><div class="ops-val" id="opsCsatScore">—</div><div class="ops-delta" id="opsCsatScoreDelta"></div></div>
+    </div>
+
+    <div class="ops-section-title">📚 Self Serve & Users</div>
+    <div class="ops-grid">
+      <div class="ops-card"><div class="ops-label">Knowledge Base Views</div><div class="ops-val" id="opsKbViews">—</div><div class="ops-delta" id="opsKbViewsDelta"></div></div>
+      <div class="ops-card"><div class="ops-label">Active Users</div><div class="ops-val" id="opsActiveUsers">—</div><div class="ops-delta" id="opsActiveUsersDelta"></div></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">Trend — Speed & Volume <span style="font-size:15px">📈</span></div>
+      <div style="position:relative;height:220px"><canvas id="opsTrendChart"></canvas></div>
+    </div>
+  </div><!-- /opsPanel -->
+
 </div>
 
 <div class="footer">
-  <span>Viz Flowics Support · CSAT Dashboard v3</span>
+  <span>Viz Flowics Support · CSAT Dashboard v5</span>
   <span id="footerTs"></span>
 </div>
 
@@ -372,6 +460,10 @@ const GOALS = {
 };
 
 const CURRENT_MONTH = '2026-06';
+
+// Operations Metrics — from "Support Metrics" sheet in the Excel
+// Note: this sheet currently lags one month behind CSAT data (no Aug 2025, no Jun 2026 yet)
+const OPS_DATA = {"months": ["2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"], "labels": ["Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026", "Jun 2026"], "metrics": {"frt": [2.32, 2.88, 2.22, 1.85, 3.3, 7.58, 4.63, 4.13, 2.88, 2.7], "resTime": [5.13, 4.27, 3.15, 2.22, 4.65, 3.8, 6.33, 5.72, 5.5, 3.82], "newCases": [217, 168, 168, 124, 240, 213, 230, 220, 167, 262], "closedConv": [228, 185, 180, 137, 243, 232, 240, 239, 182, 268], "resRate": [105.1, 110.1, 107.1, 110.5, 101.2, 108.9, 104.3, 108.6, 109.0, 102.3], "email": [37, 29, 42, 20, 59, 39, 48, 32, 20, 33], "chat": [180, 139, 126, 104, 181, 174, 182, 188, 147, 229], "chatPct": [82.9, 82.7, 75.0, 83.9, 75.4, 81.7, 79.1, 85.5, 88.0, 87.4], "surveysSent": [217, 133, 118, 124, 154, 132, 140, 153, 126, 203], "convRated": [62, 46, 47, 37, 63, 68, 43, 56, 42, 63], "responseRate": [28.6, 34.6, 39.8, 29.8, 40.9, 51.5, 30.7, 36.6, 33.3, 31.0], "csatScore": [100, 100, 100, 97.3, 96.8, 100, 97.7, 96.7, 97.7, 95.5], "kbViews": [1671, 1660, 1236, 1112, 1898, 1597, 1584, 1257, 1194, 1601], "activeUsers": [null, null, 1025, 974, 1116, 1117, 1176, 1131, 1122, 1126]}};
 const ME_NAMES  = ['andres barraza','andrés barraza'];
 const FIN_NAMES = ['fin ai agent','fin ai agent'];
 
@@ -450,90 +542,84 @@ function prevMonth() { if(currentIdx>0){currentIdx--;document.getElementById('mo
 function nextMonth() { if(currentIdx<MONTHS.length-1){currentIdx++;document.getElementById('monthSelect').value=MONTHS[currentIdx].key;remarksPage=0;remarksFilter='all';render();} }
 
 // ─────────────────────────────────────────────────────────────
-// EXECUTIVE SUMMARY (narrative style)
+// EXECUTIVE SUMMARY (headline + stats + narrative)
 // ─────────────────────────────────────────────────────────────
 function buildExecSummary(d, prev, mk) {
   const topAgent = d.agents.filter(a=>!isFin(a.name)).sort((a,b)=>b.total-a.total)[0];
   const finA = d.agents.find(a=>isFin(a.name));
-  const sentences = [];
 
-  // Opening: CSAT result + context
+  // Headline: big CSAT number + delta (the ONE place this number appears large)
+  document.getElementById('execMonth').textContent = d.label;
+  document.getElementById('execHeadline').textContent = d.csat + '% CSAT';
+  document.getElementById('execHeadline').style.color = csatColor(d.csat);
+
+  const deltaEl = document.getElementById('execHeadlineDelta');
   if (prev) {
     const diff = d.csat - prev.csat;
-    if (diff > 0) {
-      sentences.push(`${d.label.split(' ')[0]} closed with <strong>${d.csat}% CSAT</strong>, up ${diff.toFixed(1)} points from ${prev.label}, across ${d.total} rated conversations.`);
-    } else if (diff < 0) {
-      sentences.push(`${d.label.split(' ')[0]} closed with <strong>${d.csat}% CSAT</strong>, down ${Math.abs(diff).toFixed(1)} points from ${prev.label}, across ${d.total} rated conversations.`);
-    } else {
-      sentences.push(`${d.label.split(' ')[0]} held steady at <strong>${d.csat}% CSAT</strong>, matching ${prev.label}, across ${d.total} rated conversations.`);
-    }
+    const sign = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+    const color = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text3)';
+    deltaEl.innerHTML = `<span style="color:${color}">${sign} ${Math.abs(diff).toFixed(1)} vs ${prev.label}</span>`;
   } else {
-    sentences.push(`${d.label.split(' ')[0]} closed with <strong>${d.csat}% CSAT</strong> across ${d.total} rated conversations.`);
+    deltaEl.innerHTML = '';
   }
 
-  // Volume leader
-  if (topAgent) {
-    sentences.push(`${topAgent.name.split(' ')[0]} led the team in rated volume with ${topAgent.total} conversations${topAgent.csat>=95?` at ${topAgent.csat}% CSAT`:''}.`);
-  }
+  // Stats row stays minimal — context the headline doesn't carry (no raw repeats elsewhere)
+  const stats = [];
+  if (topAgent) stats.push(`<span class="exec-stat"><strong>${topAgent.name.split(' ')[0]}</strong> handled the most conversations</span>`);
+  if (d.fin > 0) stats.push(`<span class="exec-stat">Fin AI at <strong>${finA?.csat}%</strong> CSAT</span>`);
+  document.getElementById('execStatsRow').innerHTML = stats.join('');
 
-  // Detractors
+  // Narrative — qualitative, not a re-listing of numbers already shown in headline/KPIs
+  const sentences = [];
   if (d.negative === 0) {
     sentences.push(`No detractors were recorded this month.`);
   } else {
     const worst = d.remarks.find(r=>r.rating==='Bad'||r.rating==='Terrible');
-    sentences.push(`${d.negative} detractor${d.negative>1?'s were':' was'} recorded${worst?`, including feedback from ${worst.company}`:''}.`);
+    sentences.push(`A handful of detractors were recorded${worst?`, including feedback from ${worst.company}`:''}.`);
+  }
+  if (topAgent) {
+    sentences.push(`${topAgent.name.split(' ')[0]} led the team in volume${topAgent.csat>=95?` while keeping CSAT high`:''}.`);
   }
 
-  // Fin AI
-  if (d.fin === 0) {
-    sentences.push(`Fin AI did not receive any rated conversations this month.`);
-  } else {
-    sentences.push(`Fin AI handled ${d.fin} rated conversation${d.fin>1?'s':''} at ${finA?.csat??'—'}% CSAT.`);
-  }
-
-  document.getElementById('execMonth').textContent = d.label;
   document.getElementById('execBullets').innerHTML =
     `<div class="exec-bullet"><span class="exec-icon">📝</span><span>${sentences.join(' ')}</span></div>`;
+
+  // Inline alert pills (merged Attention) — only actionable signals, no raw-number repeats
+  buildExecAlerts(d, prev);
 }
 
 // ─────────────────────────────────────────────────────────────
-// ATTENTION BLOCK
+// INLINE ALERTS (merged into Executive Summary — only actionable signals)
 // ─────────────────────────────────────────────────────────────
-function buildAttention(d, prev) {
+function buildExecAlerts(d, prev) {
   const items = [];
   const finA = d.agents.find(a=>isFin(a.name));
   const prevFinA = prev?.agents.find(a=>isFin(a.name));
 
-  // Detractors
-  if (d.negative === 0) {
-    items.push({ level:'ok', icon:'🟢', text:'No detractors this month' });
-  } else {
+  if (d.negative > 0) {
     const companies = [...new Set(d.remarks.filter(r=>NEGATIVE_R.has(r.rating)).map(r=>r.company))].filter(Boolean);
-    items.push({ level:'bad', icon:'🔴', text:`${d.negative} detractor${d.negative>1?'s':''}${companies.length?` from ${companies.slice(0,2).join(', ')}`:''}` });
+    items.push({ level:'bad', icon:'🔴', text:`${d.negative} detractor${d.negative>1?'s':''}${companies.length?` · ${companies.slice(0,2).join(', ')}`:''}` });
   }
 
-  // CSAT vs goal
   if (d.csat < GOALS.csat) {
-    items.push({ level:'warn', icon:'🟡', text:`CSAT ${d.csat}% is below the ${GOALS.csat}% target` });
+    items.push({ level:'warn', icon:'🟡', text:`Below ${GOALS.csat}% CSAT target` });
   }
 
-  // Fin AI drop
   if (finA && prevFinA && (prevFinA.csat - finA.csat) >= GOALS.finCsatDropAlert) {
-    items.push({ level:'warn', icon:'🟡', text:`Fin AI CSAT dropped ${(prevFinA.csat-finA.csat).toFixed(0)}pts vs last month` });
+    items.push({ level:'warn', icon:'🟠', text:`Fin AI dropped ${(prevFinA.csat-finA.csat).toFixed(0)}pts` });
   }
 
-  // Agent below threshold
   const weakAgent = d.agents.find(a=>!isFin(a.name) && a.total>=3 && a.csat < 85);
   if (weakAgent) {
-    items.push({ level:'warn', icon:'🟡', text:`${weakAgent.name.split(' ')[0]} at ${weakAgent.csat}% CSAT this month` });
+    items.push({ level:'warn', icon:'🟡', text:`${weakAgent.name.split(' ')[0]} below target` });
   }
 
   if (items.length === 0) {
-    items.push({ level:'ok', icon:'🟢', text:'Everything on track this month' });
+    items.push({ level:'ok', icon:'🟢', text:'No critical issues this month' });
   }
 
-  document.getElementById('attentionList').innerHTML = items.slice(0,4).map(i =>
-    `<div class="attention-item ${i.level}"><span class="attention-icon">${i.icon}</span><span>${i.text}</span></div>`
+  document.getElementById('execAlerts').innerHTML = items.slice(0,4).map(i =>
+    `<span class="alert-pill ${i.level}">${i.icon} ${i.text}</span>`
   ).join('');
 }
 
@@ -549,19 +635,31 @@ function semaphoreColor(ok, warn) {
 function buildGoals(d) {
   const negRate = d.total > 0 ? d.negative/d.total*100 : 0;
 
+  // Each row: progress towards goal, expressed 0-100% of track
+  // For "lower is better" metrics (negRate), we invert the fill logic
   const rows = [
-    { label:'CSAT Score', val:d.csat+'%', ok:d.csat>=GOALS.csat, warnGap:GOALS.csat-d.csat<=3 },
-    { label:'Negative Rate', val:negRate.toFixed(1)+'%', ok:negRate<=GOALS.negRate, warnGap:negRate-GOALS.negRate<=3 },
-    { label:'Avg Rating', val:d.avg+'/5', ok:d.avg>=GOALS.avgRating, warnGap:GOALS.avgRating-d.avg<=0.3 },
+    { label:'CSAT Score', val:d.csat+'%', target:GOALS.csat+'%', current:d.csat, goal:GOALS.csat, max:100, lower:false, ok:d.csat>=GOALS.csat, warnGap:GOALS.csat-d.csat<=3 },
+    { label:'Negative Rate', val:negRate.toFixed(1)+'%', target:'≤'+GOALS.negRate+'%', current:negRate, goal:GOALS.negRate, max:Math.max(GOALS.negRate*3,10), lower:true, ok:negRate<=GOALS.negRate, warnGap:negRate-GOALS.negRate<=3 },
+    { label:'Avg Rating', val:d.avg+'/5', target:GOALS.avgRating+'/5', current:d.avg, goal:GOALS.avgRating, max:5, lower:false, ok:d.avg>=GOALS.avgRating, warnGap:GOALS.avgRating-d.avg<=0.3 },
   ];
 
   document.getElementById('goalSemaphore').innerHTML = rows.map(r => {
     const color = semaphoreColor(r.ok, !r.ok && r.warnGap);
-    return `<div class="semaphore-row">
-      <span class="semaphore-label">${r.label}</span>
-      <div class="semaphore-right">
-        <span class="semaphore-val">${r.val}</span>
-        <div class="semaphore-dot ${color}"></div>
+    const pct = Math.max(4, Math.min(100, (r.current/r.max)*100));
+    const markerPct = Math.max(0, Math.min(100, (r.goal/r.max)*100));
+    const icon = color==='green' ? '✓' : color==='yellow' ? '!' : '✕';
+    const iconColor = color==='green'?'var(--green)':color==='yellow'?'var(--orange)':'var(--red)';
+    return `<div class="goal-row">
+      <div class="goal-row-top">
+        <span class="goal-row-label">${r.label}</span>
+        <div class="goal-row-right">
+          <span class="goal-row-status-icon" style="color:${iconColor}">${icon}</span>
+          <span class="goal-row-target">goal ${r.target}</span>
+        </div>
+      </div>
+      <div class="goal-progress-track">
+        <div class="goal-progress-fill ${color}" style="width:${pct}%"></div>
+        <div class="goal-progress-marker" style="left:${markerPct}%"></div>
       </div>
     </div>`;
   }).join('');
@@ -874,6 +972,138 @@ function closeModal(e) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────────────────────
+let activeTab = 'csat';
+let opsTrendChart, opsChannelChart;
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabCsatBtn').classList.toggle('active', tab==='csat');
+  document.getElementById('tabOpsBtn').classList.toggle('active', tab==='ops');
+  document.getElementById('csatPanel').classList.toggle('active', tab==='csat');
+  document.getElementById('opsPanel').classList.toggle('active', tab==='ops');
+  if (tab === 'ops') renderOps();
+}
+
+// ─────────────────────────────────────────────────────────────
+// OPERATIONS METRICS (separate dataset, driven by same month selector)
+// ─────────────────────────────────────────────────────────────
+function opsIdxForMonth(mk) {
+  return OPS_DATA.months.indexOf(mk);
+}
+
+function opsDelta(curr, prev, suffix='', lowerIsBetter=false, decimals=1) {
+  if (curr==null || prev==null) return '';
+  const d = curr - prev;
+  const good = lowerIsBetter ? d <= 0 : d >= 0;
+  const color = Math.abs(d) < 0.001 ? 'var(--text3)' : good ? 'var(--green)' : 'var(--red)';
+  const sign = d > 0 ? '+' : '';
+  return `<span style="color:${color}">${sign}${d.toFixed(decimals)}${suffix} vs prev</span>`;
+}
+
+function fmtMinutes(m) {
+  if (m==null) return '—';
+  const mins = Math.floor(m);
+  const secs = Math.round((m-mins)*60);
+  return `${mins}:${secs.toString().padStart(2,'0')}`;
+}
+function fmtHours(h) {
+  if (h==null) return '—';
+  const hrs = Math.floor(h);
+  const mins = Math.round((h-hrs)*60);
+  return `${hrs}h ${mins}m`;
+}
+
+function renderOps() {
+  const mk = MONTHS[currentIdx].key;
+  const idx = opsIdxForMonth(mk);
+  const banner = document.getElementById('opsPendingBanner');
+
+  if (idx === -1) {
+    banner.style.display = 'block';
+    banner.textContent = `⏳ Operations data for ${DATA[mk].label} is not in the Excel yet — this sheet updates with a slight lag. Showing the most recent available month below.`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  const useIdx = idx !== -1 ? idx : OPS_DATA.months.length - 1;
+  const prevIdx = useIdx - 1;
+  const m = OPS_DATA.metrics;
+
+  const get = (key, i) => i>=0 ? m[key][i] : null;
+
+  document.getElementById('opsFrt').textContent = fmtMinutes(get('frt',useIdx));
+  document.getElementById('opsFrtDelta').innerHTML = opsDelta(get('frt',useIdx), get('frt',prevIdx), 'm', true);
+  document.getElementById('opsResTime').textContent = fmtHours(get('resTime',useIdx));
+  document.getElementById('opsResTimeDelta').innerHTML = opsDelta(get('resTime',useIdx), get('resTime',prevIdx), 'h', true);
+
+  document.getElementById('opsNewCases').textContent = get('newCases',useIdx) ?? '—';
+  document.getElementById('opsNewCasesDelta').innerHTML = opsDelta(get('newCases',useIdx), get('newCases',prevIdx), '', false, 0);
+  document.getElementById('opsClosedConv').textContent = get('closedConv',useIdx) ?? '—';
+  document.getElementById('opsClosedConvDelta').innerHTML = opsDelta(get('closedConv',useIdx), get('closedConv',prevIdx), '', false, 0);
+  document.getElementById('opsResRate').textContent = get('resRate',useIdx)!=null ? get('resRate',useIdx)+'%' : '—';
+  document.getElementById('opsResRateDelta').innerHTML = opsDelta(get('resRate',useIdx), get('resRate',prevIdx), '%');
+  document.getElementById('opsChatPct').textContent = get('chatPct',useIdx)!=null ? get('chatPct',useIdx)+'%' : '—';
+  document.getElementById('opsChatPctDelta').innerHTML = opsDelta(get('chatPct',useIdx), get('chatPct',prevIdx), '%');
+
+  document.getElementById('opsSurveys').textContent = get('surveysSent',useIdx) ?? '—';
+  document.getElementById('opsSurveysDelta').innerHTML = opsDelta(get('surveysSent',useIdx), get('surveysSent',prevIdx), '', false, 0);
+  document.getElementById('opsConvRated').textContent = get('convRated',useIdx) ?? '—';
+  document.getElementById('opsConvRatedDelta').innerHTML = opsDelta(get('convRated',useIdx), get('convRated',prevIdx), '', false, 0);
+  document.getElementById('opsRespRate').textContent = get('responseRate',useIdx)!=null ? get('responseRate',useIdx)+'%' : '—';
+  document.getElementById('opsRespRateDelta').innerHTML = opsDelta(get('responseRate',useIdx), get('responseRate',prevIdx), '%');
+  document.getElementById('opsCsatScore').textContent = get('csatScore',useIdx)!=null ? get('csatScore',useIdx)+'%' : '—';
+  document.getElementById('opsCsatScoreDelta').innerHTML = opsDelta(get('csatScore',useIdx), get('csatScore',prevIdx), '%');
+
+  document.getElementById('opsKbViews').textContent = get('kbViews',useIdx)?.toLocaleString() ?? '—';
+  document.getElementById('opsKbViewsDelta').innerHTML = opsDelta(get('kbViews',useIdx), get('kbViews',prevIdx), '', false, 0);
+  document.getElementById('opsActiveUsers').textContent = get('activeUsers',useIdx)?.toLocaleString() ?? '—';
+  document.getElementById('opsActiveUsersDelta').innerHTML = opsDelta(get('activeUsers',useIdx), get('activeUsers',prevIdx), '', false, 0);
+
+  if (opsChannelChart) opsChannelChart.destroy();
+  opsChannelChart = new Chart(document.getElementById('opsChannelChart'), {
+    type:'bar',
+    data:{
+      labels: OPS_DATA.labels,
+      datasets:[
+        { label:'Email', data:m.email, backgroundColor:'rgba(227,179,65,.6)', borderRadius:3, stack:'s' },
+        { label:'Chat', data:m.chat, backgroundColor:'rgba(55,138,221,.7)', borderRadius:3, stack:'s' }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{labels:{font:{size:10},color:'#8b949e',boxWidth:10}}, tooltip:{backgroundColor:'#161b22',borderColor:'#30363d',borderWidth:1} },
+      scales:{
+        x:{ stacked:true, ticks:{font:{size:9},color:'#8b949e',maxRotation:45}, grid:{display:false} },
+        y:{ stacked:true, ticks:{font:{size:10},color:'#8b949e'}, grid:{color:'rgba(48,54,61,.4)'} }
+      }
+    }
+  });
+
+  if (opsTrendChart) opsTrendChart.destroy();
+  opsTrendChart = new Chart(document.getElementById('opsTrendChart'), {
+    data:{
+      labels: OPS_DATA.labels,
+      datasets:[
+        { type:'bar', label:'New Cases', data:m.newCases, backgroundColor:'rgba(55,138,221,.18)', borderColor:'rgba(55,138,221,.4)', borderWidth:1, borderRadius:3, yAxisID:'y2', order:2 },
+        { type:'line', label:'First Response (min)', data:m.frt, borderColor:'#e3b341', backgroundColor:'rgba(227,179,65,.06)', borderWidth:2.5, pointRadius:4, tension:.3, fill:true, yAxisID:'y1', order:1 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{labels:{font:{size:10},color:'#8b949e',boxWidth:10}}, tooltip:{backgroundColor:'#161b22',borderColor:'#30363d',borderWidth:1} },
+      scales:{
+        y1:{ position:'left', ticks:{callback:v=>v+'m',font:{size:10},color:'#8b949e'}, grid:{color:'rgba(48,54,61,.4)'} },
+        y2:{ position:'right', ticks:{font:{size:10},color:'#8b949e'}, grid:{display:false} },
+        x:{ ticks:{font:{size:9},maxRotation:45,color:'#8b949e'}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // MAIN RENDER
 // ─────────────────────────────────────────────────────────────
 function render() {
@@ -889,9 +1119,8 @@ function render() {
   document.getElementById('wipBanner').classList.toggle('show', isLast);
   document.getElementById('headerSub').textContent = `${d.label} · ${d.total} conversations rated`;
 
-  // Executive summary + Attention
+  // Executive summary (now includes merged Attention alerts)
   buildExecSummary(d, prev, mk);
-  buildAttention(d, prev);
 
   // Goals
   buildGoals(d);
@@ -976,6 +1205,9 @@ function render() {
   buildHighlightRemarks(d);
   buildRemarksFilter(d);
   renderRemarks(d);
+
+  // Keep Ops tab in sync if it's currently visible
+  if (activeTab === 'ops') renderOps();
 }
 
 // Footer
