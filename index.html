@@ -280,7 +280,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 
 /* RESPONSIVE */
 @media(max-width:1400px){.kpi-row{grid-template-columns:repeat(3,1fr)}.ops-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-equal{grid-template-columns:1fr}.highlight-remarks{grid-template-columns:1fr}}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-equal{grid-template-columns:1fr}.highlight-remarks{grid-template-columns:1fr}.fin-remarks-grid{grid-template-columns:1fr !important}}
 @media(max-width:700px){.kpi-row,.ops-grid{grid-template-columns:1fr 1fr}.canvas{padding:14px 16px}.header{padding:14px 16px}.tab-bar{padding:0 16px}.footer{padding:10px 16px}}
 </style>
 </head>
@@ -328,10 +328,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
       <span class="exec-headline-delta" id="execHeadlineDelta"></span>
     </div>
     <div class="exec-stats-row" id="execStatsRow"></div>
-    <div class="exec-bullets" id="execBullets"></div>
     <div id="topPerformer"></div>
     <div class="exec-alerts" id="execAlerts"></div>
-    <div id="detractorsSection"></div>
   </div>
 
   <!-- KPIs (5) -->
@@ -405,12 +403,14 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
     </div>
   </div>
 
-  <!-- FIN AI + REMARKS -->
-  <div class="grid-equal">
-    <div class="card fin-card">
-      <div class="card-title" style="color:var(--purple)">Fin AI Agent <span style="font-size:15px">🤖</span></div>
-      <div id="finMetrics"></div>
-      
+  <!-- FIN AI + DETRACTORS (left 30%) + REMARKS (right 70%) -->
+  <div style="display:grid;grid-template-columns:1fr 2.3fr;gap:14px;margin-bottom:14px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card fin-card">
+        <div class="card-title" style="color:var(--purple)">Fin AI Agent <span style="font-size:15px">🤖</span></div>
+        <div id="finMetrics"></div>
+      </div>
+      <div id="detractorsSection"></div>
     </div>
     <div class="card">
       <div class="card-title">Customer Remarks <span style="font-size:15px">💬</span></div>
@@ -609,41 +609,6 @@ function buildExecSummary(d, prev, mk) {
   if (d.fin > 0 && finA) stats.push(`<span class="exec-stat">Fin AI at <strong>${finA.csat}%</strong> CSAT</span>`);
   document.getElementById('execStatsRow').innerHTML = stats.join('');
 
-  // Exactly 3 bullets: (1) CSAT context, (2) alert/negative, (3) volume context
-  const bullets = [];
-
-  // Bullet 1 — CSAT context vs prev
-  if (prev) {
-    const diff = d.csat - prev.csat;
-    if (diff > 0)      bullets.push(`CSAT improved ${diff.toFixed(1)} points over ${prev.label}, continuing a positive trend.`);
-    else if (diff < 0) bullets.push(`CSAT dropped ${Math.abs(diff).toFixed(1)} points from ${prev.label}.`);
-    else               bullets.push(`CSAT held steady at ${d.csat}%, matching ${prev.label}.`);
-  } else {
-    bullets.push(`CSAT opened at ${d.csat}% for the first tracked month.`);
-  }
-
-  // Bullet 2 — main alert (negative or positive)
-  if (d.negative === 0) {
-    bullets.push(`No detractors were recorded — all ${d.total} rated conversations ended positively.`);
-  } else {
-    const hasTrueBad = (d.detractors||[]).some(r=>r.rating==='Bad'||r.rating==='Terrible');
-    const worst = d.remarks.find(r=>r.rating==='Bad'||r.rating==='Terrible');
-    if (hasTrueBad && worst) {
-      bullets.push(`${d.negative} sub-target rating${d.negative>1?'s were':' was'} recorded, including feedback from ${worst.company}.`);
-    } else {
-      bullets.push(`${d.negative} neutral rating${d.negative>1?'s were':' was'} recorded — no true detractors this month.`);
-    }
-  }
-
-  // Bullet 3 — volume/team context
-  if (topByVol) {
-    bullets.push(`${topByVol.name.split(' ')[0]} led in volume with ${topByVol.total} rated conversations${topByVol.csat>=95?` at ${topByVol.csat}% CSAT`:''}.`);
-  }
-
-  document.getElementById('execBullets').innerHTML = bullets.map(b =>
-    `<div class="exec-bullet"><span class="exec-icon">📝</span><span>${b}</span></div>`
-  ).join('');
-
   // Top Performer block
   const tpEl = document.getElementById('topPerformer');
   if (topPerf) {
@@ -720,7 +685,7 @@ function buildDetractors(d) {
 
   const hasTrueBad = detractors.some(r => r.rating === 'Bad' || r.rating === 'Terrible');
   const headerColor = hasTrueBad ? 'var(--red)' : 'var(--orange)';
-  const borderColor = hasTrueBad ? 'rgba(248,81,73,.2)' : 'rgba(227,179,65,.2)';
+  const borderColor = hasTrueBad ? 'rgba(248,81,73,.25)' : 'rgba(227,179,65,.25)';
   const icon = hasTrueBad ? '🔴' : '🟡';
 
   const rows = detractors.map(r => {
@@ -733,9 +698,9 @@ function buildDetractors(d) {
     </tr>`;
   }).join('');
 
-  section.innerHTML = `<div class="detractors-section" style="border-top-color:${borderColor}">
-    <div style="font-size:10px;font-weight:600;color:${headerColor};text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">
-      ${icon} Sub-target rating${detractors.length>1?'s':''} — ${detractors.length} conversation${detractors.length>1?'s':''}
+  section.innerHTML = `<div class="card" style="border-color:${borderColor}">
+    <div class="card-title" style="color:${headerColor};border-bottom-color:${borderColor}">
+      ${icon} Sub-target ratings — ${detractors.length} conversation${detractors.length>1?'s':''}
     </div>
     <table class="detractors-table">
       <thead>
