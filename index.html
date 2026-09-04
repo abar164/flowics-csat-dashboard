@@ -5,119 +5,159 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Viz Flowics · Support CSAT</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </head>
 <body>
 
-  <!-- ================= HEADER ================= -->
-  <header class="header">
-    <div class="header__left">
-      <div id="liveDot" class="live-dot"></div>
-      <div>
-        <div class="header__title">Viz Flowics · Support CSAT</div>
-        <div id="headerSub" class="header__sub">Loading…</div>
-      </div>
+  <!-- ================= TOP BAR ================= -->
+  <header class="topbar">
+    <div class="topbar__left">
+      <div class="topbar__kicker">Viz Flowics · Support</div>
+      <h1 class="topbar__title">Customer Satisfaction</h1>
     </div>
-    <div class="header__controls">
-      <span id="liveBadge" class="live-badge">● LIVE</span>
-      <button class="nav-btn" data-act="prev" aria-label="Previous month">‹</button>
-      <select id="monthSelect" class="month-select" aria-label="Select month"></select>
-      <button class="nav-btn" data-act="next" aria-label="Next month">›</button>
+    <div class="topbar__right">
+      <span id="liveBadge" class="live"><span class="live__dot"></span>Live</span>
+      <div class="stepper">
+        <button class="btn btn--icon" data-act="prev" aria-label="Previous month">‹</button>
+        <select id="monthSelect" class="stepper__select" aria-label="Select month"></select>
+        <button class="btn btn--icon" data-act="next" aria-label="Next month">›</button>
+      </div>
     </div>
   </header>
 
   <!-- ================= TABS ================= -->
   <nav class="tabs">
-    <button id="tabCsatBtn" class="tab tab--active" data-act="tab-csat">CSAT Dashboard</button>
-    <button id="tabOpsBtn" class="tab" data-act="tab-ops">Operations Metrics</button>
+    <button id="tabCsatBtn" class="tab tab--active" data-act="tab-csat">Satisfaction</button>
+    <button id="tabOpsBtn" class="tab" data-act="tab-ops">Operations</button>
   </nav>
 
-  <main class="main">
+  <!-- ================= SATISFACTION ================= -->
+  <main id="csatPanel" class="wrap">
+    <div id="wipNote" class="note">Month in progress — data updates as new ratings come in from Intercom.</div>
 
-    <!-- ================= CSAT PANEL ================= -->
-    <section id="csatPanel">
-      <div id="wipBanner" class="wip-banner">Month in progress — data updates as new ratings come in from Intercom.</div>
-
-      <div id="execSummary" class="card exec-summary"></div>
-
-      <div id="kpiRow" class="kpi-row"></div>
-
-      <div class="card panel" style="margin-bottom:14px;">
-        <div class="panel__heading">CSAT Trend &amp; Volume</div>
-        <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    <!-- 1. How are we doing? -->
+    <section class="hero">
+      <div class="hero__fig">
+        <div class="kicker" id="csatKicker">CSAT</div>
+        <div class="hero__num" id="csatBig">—</div>
+        <div class="hero__meta" id="csatMeta"></div>
+        <p class="hero__verdict" id="csatVerdict"></p>
       </div>
+      <div class="facts" id="csatFacts"></div>
+    </section>
 
-      <div class="grid-2">
-        <div class="card panel">
-          <div class="panel__heading">Rating Distribution</div>
-          <div id="ratingBars"></div>
-          <div class="chart-box--donut"><canvas id="donutChart"></canvas></div>
+    <!-- 2. Who is driving the results? -->
+    <section class="cols cols--stretch">
+      <div class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Ratings by agent</h2>
+          <span class="panel__note">Sorted by rated volume</span>
         </div>
-        <div class="card panel panel--flex">
-          <div class="panel__heading">Agent Performance <span class="panel__hint">Click a row for drill-down</span></div>
-          <div id="agentList" class="agent-list"></div>
-        </div>
+        <div class="abars" id="agentBars"></div>
+        <p class="panel__foot">Bar length is rated volume · the percentage is that agent’s CSAT.</p>
       </div>
-
-      <div class="grid-2">
-        <div class="card panel panel--flex">
-          <div class="panel__heading">Volume by Agent</div>
-          <div class="chart-box--flex"><canvas id="agentChart"></canvas></div>
-        </div>
-        <div class="card panel panel--flex">
-          <div class="panel__heading">CSAT vs Volume</div>
-          <div class="chart-box--flex"><canvas id="agentScatterChart"></canvas></div>
-        </div>
-      </div>
-
-      <div class="grid-1-2">
-        <div class="stack">
-          <div class="card panel panel--fin">
-            <div class="panel__heading">Fin AI Agent</div>
-            <div id="finMetrics"></div>
+      <div class="col">
+        <div class="panel" id="topPanel"></div>
+        <div class="panel" id="finPanel" style="display:none"></div>
+        <div class="panel">
+          <div class="panel__head">
+            <h2 class="panel__title">Rating mix</h2>
+            <span class="panel__note" id="mixNote"></span>
           </div>
-          <div id="detractorsSection"></div>
-        </div>
-        <div class="card panel">
-          <div class="panel__heading">Customer Remarks</div>
-          <div id="highlightRemarks" class="highlights"></div>
-          <div id="remarksFilter" class="remarks-filter"></div>
-          <div id="remarksList"></div>
+          <div class="dist" id="ratingBars"></div>
         </div>
       </div>
     </section>
 
-    <!-- ================= OPS PANEL ================= -->
-    <section id="opsPanel" style="display:none;">
-      <div id="opsPendingBanner" class="ops-pending-banner"></div>
-      <div id="opsExecSummary"></div>
-      <div id="opsBody"></div>
-      <div class="card panel" style="margin-top:14px;">
-        <div class="panel__heading">Trend — Speed &amp; Volume</div>
-        <div class="chart-box--ops"><canvas id="opsTrendChart"></canvas></div>
+    <!-- 3. What are customers saying? · 4. What needs attention? -->
+    <section class="cols">
+      <div class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Customer remarks</h2>
+          <span class="panel__note" id="remarksNote"></span>
+        </div>
+        <div class="toolbar" id="remarksToolbar"></div>
+        <div id="remarksList"></div>
+        <div id="remarksPager"></div>
+      </div>
+      <div class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Attention needed</h2>
+          <span class="panel__note" id="attnNote"></span>
+        </div>
+        <div id="attnList"></div>
       </div>
     </section>
 
+    <!-- 5. How are we performing historically? -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">CSAT and rated volume</h2>
+        <span class="panel__note">13-month trend</span>
+      </div>
+      <div class="chartbox"><canvas id="trendChart"></canvas></div>
+    </section>
   </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="footer">
-    <span class="footer__text">Viz Flowics Support · CSAT Dashboard</span>
-    <span id="footerTs" class="footer__text"></span>
-  </footer>
+  <!-- ================= OPERATIONS ================= -->
+  <main id="opsPanel" class="wrap" style="display:none">
+    <div id="opsNote" class="note"></div>
 
-  <!-- ================= AGENT DRILL-DOWN MODAL ================= -->
-  <div id="modalOverlay" class="modal-overlay" data-act="modal-bg">
-    <div class="modal">
-      <div class="modal__head">
-        <div id="modalTitle" class="modal__title"></div>
-        <button class="modal__close" data-act="modal-close" aria-label="Close">✕</button>
+    <section class="hero">
+      <div class="hero__fig">
+        <div class="kicker" id="opsKicker">Case volume</div>
+        <div class="hero__num" id="opsBig">—</div>
+        <div class="hero__meta" id="opsMeta"></div>
       </div>
-      <div id="modalBody"></div>
-    </div>
-  </div>
+      <div class="hero__side">
+        <div class="kicker" style="margin-bottom:14px">What moved</div>
+        <ul class="bullets" id="opsBullets"></ul>
+      </div>
+    </section>
+
+    <section>
+      <div class="kicker" style="margin-bottom:16px">Speed &amp; throughput</div>
+      <div class="tiles" id="opsTiles"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Volume by channel</h2>
+        <div class="legend" style="margin:0">
+          <span class="legend__key"><span class="legend__swatch" style="background:var(--accent)"></span>Chat</span>
+          <span class="legend__key"><span class="legend__swatch" style="background:var(--n700)"></span>Email</span>
+        </div>
+      </div>
+      <div id="chanChart"></div>
+    </section>
+
+    <section class="cols">
+      <div class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">First response time</h2>
+          <span class="panel__note">minutes · 13-month trend</span>
+        </div>
+        <div class="chartbox chartbox--sm"><canvas id="opsTrendChart"></canvas></div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <div class="panel__head"><h2 class="panel__title">Survey coverage</h2></div>
+          <div class="statlines" id="qaLines"></div>
+        </div>
+        <div class="panel">
+          <div class="panel__head"><h2 class="panel__title">Self serve</h2></div>
+          <div class="statlines" id="selfLines"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Viz Flowics Support · CSAT Dashboard</span>
+    <span id="footerTs"></span>
+  </footer>
 
   <script type="module" src="js/app.js"></script>
 </body>
