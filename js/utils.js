@@ -80,6 +80,107 @@ export function monthVerdict(d, t) {
   return quality + ' satisfaction with ' + parts.join(' and ') + '.';
 }
 
+/** A duration difference in minutes as m:ss — 0.47 min reads as 0:28. */
+export const fmtMinSec = m => {
+  const s = Math.round(m * 60);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+};
+
+/** A duration difference in hours, compact — 37m, or 1h 5m past the hour. */
+export const fmtHoursShort = h => {
+  const mn = Math.round(h * 60);
+  return mn < 60 ? mn + 'm' : Math.floor(mn / 60) + 'h ' + (mn % 60) + 'm';
+};
+
+/**
+ * A delta whose magnitude runs through a formatter, so a time metric can
+ * read as +0:28 instead of +0.47m.
+ *
+ * `neutral` drops the green/red entirely. Direction only earns a colour
+ * when direction has a performance meaning: response and resolution time
+ * do, demand and workload volume do not — more cases arriving is not a
+ * win or a loss, it is just more work.
+ */
+export function deltaAs(curr, prev, fmt, { lowerIsBetter = false, neutral = false, dim = false, label = 'vs prev' } = {}) {
+  if (curr == null || prev == null) return '';
+  const d = curr - prev;
+  const flat = Math.abs(d) < 1e-9;
+  const color = dim ? C.text3
+    : neutral ? C.text2
+    : flat ? C.flat
+    : (lowerIsBetter ? d < 0 : d > 0) ? C.ok : C.bad;
+  const arrow = flat ? '→' : d > 0 ? '↑' : '↓';
+  return `<span class="delta" style="color:${color}">${arrow} ${fmt(Math.abs(d))} ${label}</span>`;
+}
+
+/** ISO date → "Aug 31". */
+export function fmtDay(isoDate) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Everything the Backlog Health section shows, derived from the raw
+ * snapshots — nothing is read pre-calculated.
+ *
+ * Backlog is a stock, not a flow: the month's figure is the LAST
+ * snapshot, never a sum of days. Days with no snapshot are absent from
+ * the data and stay absent here, so they never dilute the average or
+ * fake a low point. Returns null when the month has no backlog data at
+ * all, which is how the section knows to stay hidden.
+ */
+export function backlogView(backlog, monthKey, monthLabel, prevMonthKey, prevMonthLabel) {
+  const m = backlog[monthKey];
+  if (!m || !m.daily || !m.daily.length) return null;
+
+  const daily = [...m.daily].sort((a, b) => a.date.localeCompare(b.date));
+  const ending = daily[daily.length - 1];
+
+  const pm = prevMonthKey ? backlog[prevMonthKey] : null;
+  const pDaily = pm && pm.daily && pm.daily.length
+    ? [...pm.daily].sort((a, b) => a.date.localeCompare(b.date))
+    : null;
+  const prevEnding = pDaily ? pDaily[pDaily.length - 1] : null;
+
+  const totals = daily.map(d => d.total);
+  const avg = Math.round(totals.reduce((s, n) => s + n, 0) / totals.length);
+  const peak = totals.reduce((a, b) => Math.max(a, b), 0);
+  const peakDay = daily.find(d => d.total === peak);
+
+  // Composition comes from the latest date that actually carries category
+  // rows — which can lag the latest daily snapshot.
+  const catDates = Object.keys(m.categories || {}).sort();
+  const catDate = catDates.length ? catDates[catDates.length - 1] : null;
+  const rows = catDate ? m.categories[catDate] : [];
+  const catTotal = rows.reduce((s, r) => s + r[1], 0);
+  const categories = rows
+    .map(([name, total, open, snoozed]) => ({
+      name, total, open, snoozed,
+      pct: catTotal ? total / catTotal * 100 : 0
+    }))
+    .filter(c => c.total > 0)
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+
+  const [y, mo] = monthKey.split('-').map(Number);
+  const fullMonth = k => k
+    ? new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, 1).toLocaleDateString('en-US', { month: 'long' })
+    : null;
+
+  return {
+    monthKey, monthLabel, prevMonthLabel,
+    prevMonthFull: fullMonth(prevMonthKey),
+    daily, ending, prevEnding,
+    avg, peak, peakDay,
+    snapshots: daily.length,
+    // A single snapshot is a valid ending backlog but not a trend: one
+    // point has no average or peak worth reading, so the section shows
+    // the KPIs and suppresses everything that implies a shape.
+    hasTrend: daily.length >= 2,
+    calendarDays: new Date(y, mo, 0).getDate(),
+    catDate, catTotal, categories
+  };
+}
+
 /** Run cb once Chart.js (CDN) is available. */
 export function whenChart(cb) {
   if (window.Chart) cb();

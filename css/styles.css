@@ -383,9 +383,115 @@ a:hover { color: var(--accent-300); }
   overflow: hidden;
 }
 .tile { background: var(--surface); padding: 20px 22px; }
-.tile__label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
+.tile__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 10px;
+}
+.tile__hint {
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(233, 233, 237, .3);
+  border-radius: 50%;
+  font-size: 9px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text3);
+  cursor: help;
+}
+.tile__label:hover .tile__hint { border-color: var(--accent); color: var(--accent-300); }
 .tile__value { font-size: 30px; font-weight: 500; line-height: 1; }
 .tile .delta { display: block; margin-top: 9px; font-size: 12px; }
+.tile__sub { display: block; margin-top: 9px; font-size: 12px; color: var(--text3); }
+.tile .delta + .tile__sub,
+.tile .tile__sub + .delta { margin-top: 6px; }
+
+/* Three KPIs, not six: auto-fit keeps them on one row far longer and
+   never leaves an empty cell hanging next to them. The doubled class
+   beats the single-class overrides in the responsive block below. */
+.tiles.tiles--kpi { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+/* ---------- backlog ---------- */
+.sechead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sechead .kicker { margin: 0; }
+.sechead__note { font-size: 12px; color: var(--text2); }
+
+.chart-empty {
+  margin: 0;
+  padding: 34px 0 30px;
+  font-size: 13px;
+  color: var(--text2);
+  text-wrap: pretty;
+}
+
+.micro { display: flex; gap: 32px; margin: -8px 0 18px; }
+.micro__item { display: flex; flex-direction: column; gap: 5px; }
+.micro__label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); }
+.micro__value { font-size: 19px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+.micro__sub { font-size: 11px; color: var(--text3); }
+
+.bcats { display: flex; flex-direction: column; gap: 12px; }
+.bcat {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 34px 52px 124px;
+  align-items: center;
+  gap: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.bcat--head {
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding-bottom: 4px;
+}
+.bcat__name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bcat__track {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(233, 233, 237, .07);
+  overflow: hidden;
+}
+.bcat__open { background: var(--accent); }
+.bcat__snoozed { background: var(--accent-700); }
+.bcat__n { font-size: 13px; text-align: right; }
+.bcat__pct { font-size: 12px; color: var(--text2); text-align: right; }
+.bcat__split { font-size: 11px; color: var(--text3); text-align: right; }
+
+@media (max-width: 820px) {
+  .bcat {
+    grid-template-columns: minmax(0, 1fr) 34px 52px;
+    grid-template-areas: "name name name" "track n pct" "split split split";
+    gap: 6px 12px;
+  }
+  .bcat__name { grid-area: name; white-space: normal; }
+  .bcat__track { grid-area: track; }
+  .bcat__n { grid-area: n; }
+  .bcat__pct { grid-area: pct; }
+  .bcat__split { grid-area: split; text-align: left; }
+  .bcat--head { display: none; }
+  .bcats { gap: 20px; }
+  .micro { gap: 24px; }
+}
 
 /* ---------- channel bars (CSS, no canvas) ---------- */
 .chan { display: flex; align-items: flex-end; gap: 10px; height: 190px; margin-top: 26px; }

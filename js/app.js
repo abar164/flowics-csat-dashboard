@@ -6,10 +6,10 @@
 // ============================================================
 
 import { C, GOALS, RORDER, RCOLORS } from './config.js';
-import { MONTHS, DATA, OPS_DATA } from './data.js';
+import { MONTHS, DATA, OPS_DATA, BACKLOG } from './data.js';
 import {
   isFin, tally, splitDetractors, csatColor, fmtMinutes, fmtHours,
-  delta, monthVerdict, whenChart, esc
+  delta, deltaAs, fmtMinSec, fmtHoursShort, monthVerdict, whenChart, esc, fmtDay, backlogView
 } from './utils.js';
 import * as ui from './components.js';
 import * as charts from './charts.js';
@@ -20,7 +20,8 @@ const state = {
   tab: 'csat',
   remarksPage: 0,
   remarksPerPage: 4,
-  remarksAgent: 'all'
+  remarksAgent: 'all',
+  backlog: null
 };
 
 const el = id => document.getElementById(id);
@@ -113,6 +114,7 @@ function renderCharts() {
     charts.buildTrendChart(el('trendChart'), MONTHS, DATA, state.monthIdx);
   } else {
     charts.buildOpsTrendChart(el('opsTrendChart'), OPS_DATA);
+    if (state.backlog && state.backlog.hasTrend) charts.buildBacklogChart(el('backlogChart'), state.backlog);
   }
 }
 
@@ -159,7 +161,12 @@ function renderHero(d, prev) {
       value: frt != null ? fmtMinutes(frt) : '—',
       sub: opsIdx === -1
         ? `${OPS_DATA.labels[useOps]} · ops sheet lags`
-        : (pFrt != null ? delta(frt, pFrt, 'm', true, 2, 'vs prev') : 'minutes · avg')
+        : (pFrt != null
+            ? deltaAs(frt, pFrt, fmtMinSec, {
+                lowerIsBetter: true,
+                label: 'vs ' + OPS_DATA.labels[useOps - 1].split(' ')[0]
+              })
+            : 'minutes · avg')
     }) +
     ui.fact({
       label: 'Response rate',
@@ -295,15 +302,28 @@ function renderOps() {
 
   const i = idx !== -1 ? idx : OPS_DATA.months.length - 1;
   const p = i - 1, m = OPS_DATA.metrics;
+  const vs = p >= 0 ? 'vs ' + OPS_DATA.labels[p].split(' ')[0] : 'vs prev';
   const get = (k, j) => (j >= 0 ? m[k][j] : null);
   const dd = (k, su = '', lo = false, dec = 1) => delta(get(k, i), get(k, p), su, lo, dec);
 
   const nc = get('newCases', i), pnc = get('newCases', p);
   el('opsKicker').textContent = 'Case volume · ' + OPS_DATA.labels[i];
   el('opsBig').textContent = nc ?? '—';
+  // Demand, not performance: the hero delta stays neutral so it agrees
+  // with the New cases tile a few rows below it.
   el('opsMeta').innerHTML = (nc != null && pnc != null)
-    ? delta(nc / pnc * 100 - 100, 0, '%', false, 0, 'vs prev') + `<span>${pnc} → ${nc}</span>`
+    ? deltaAs(nc / pnc * 100, 100, n => n.toFixed(0) + '%', { neutral: true, label: vs }) +
+      `<span>${pnc} → ${nc}</span>`
     : '';
+
+  // Backlog follows the SELECTED month, not the ops sheet's lagged index.
+  const bl = backlogView(
+    BACKLOG, mk, DATA[mk]?.label ?? mk,
+    state.monthIdx > 0 ? MONTHS[state.monthIdx - 1].key : null,
+    state.monthIdx > 0 ? MONTHS[state.monthIdx - 1].label : null
+  );
+  state.backlog = bl;
+  renderBacklog(bl);
 
   const bullets = [];
   const frt = get('frt', i), pfrt = get('frt', p);
@@ -322,21 +342,71 @@ function renderOps() {
   if (cc != null && pcc != null) {
     bullets.push(`${cc} conversations closed, ${Math.abs(cc - pcc)} ${cc >= pcc ? 'more' : 'fewer'} than last month.`);
   }
-  el('opsBullets').innerHTML = bullets.map(b => `<li><span>${b}</span></li>`).join('');
+
+  // Workload is activity, not performance — the bullet states the move and
+  // its composition, and draws no conclusion from it. It only earns a line
+  // when the shift is large enough to change how the month felt.
+  const wlNow = get('workload', i), wlPrev = get('workload', p);
+  if (wlNow != null && wlPrev != null) {
+    const dw = wlNow - wlPrev, aw = Math.abs(dw);
+    const pw = wlPrev ? aw / wlPrev * 100 : 0;
+    if (aw >= GOALS.workloadMoveAbs && pw >= GOALS.workloadMovePct) {
+      const roNow = get('reopened', i);
+      const pKey = OPS_DATA.months[p];
+      const pFull = new Date(+pKey.slice(0, 4), +pKey.slice(5, 7) - 1, 1)
+        .toLocaleDateString('en-US', { month: 'long' });
+      bullets.splice(1, 0,
+        `Total support workload ${dw > 0 ? 'increased' : 'decreased'} to ${wlNow}, ` +
+        `${dw > 0 ? 'up' : 'down'} ${aw} from ${pFull}` +
+        (roNow != null && nc != null
+          ? `, driven by ${nc} new cases and ${roNow} reopened conversations.` : '.'));
+    }
+  }
+
+  const blBullet = backlogBullet(bl);
+  if (blBullet) bullets.unshift(blBullet);
+
+  el('opsBullets').innerHTML = bullets.length
+    ? bullets.slice(0, 4).map(b => `<li><span>${b}</span></li>`).join('')
+    : `<li><span>${OPS_DATA.labels[i]} is the earliest month on record — nothing to compare it against yet.</span></li>`;
 
   const pct = k => (get(k, i) != null ? get(k, i) + '%' : '—');
+
   // The sheet's resRate column is pre-rounded to one decimal (1.1), so the
   // ratio is computed from the raw counts instead: closed ÷ new. 1.08 means
-  // we closed 1.08 cases for every one that came in.
+  // we closed 1.08 cases for every one that came in. Reopens deliberately
+  // stay out of it — the question is whether the queue is draining.
   const ratio = (cc != null && nc) ? cc / nc : null;
-  const pRatio = (pcc != null && pnc) ? pcc / pnc : null;
+  const ro = get('reopened', i), pro = get('reopened', p);
+  const wl = get('workload', i), pwl = get('workload', p);
+  const rr = get('reopenRate', i);
+  const whole = n => n.toFixed(0);
+
   el('opsTiles').innerHTML =
-    ui.tile('New cases', nc ?? '—', dd('newCases', '', false, 0)) +
-    ui.tile('Closed', cc ?? '—', dd('closedConv', '', false, 0)) +
-    ui.tile('First response', fmtMinutes(frt), dd('frt', 'm', true, 2)) +
-    ui.tile('Resolution time', fmtHours(res), dd('resTime', 'h', true)) +
-    ui.tile('Chat share', pct('chatPct'), dd('chatPct', ' pts')) +
-    ui.tile('Closed vs new', ratio != null ? ratio.toFixed(2) + '×' : '—', delta(ratio, pRatio, '×', false, 2));
+    // Demand: neutral. More cases arriving is not a win or a loss.
+    ui.tile('New cases', nc ?? '—',
+      deltaAs(nc, pnc, whole, { neutral: true, label: vs })) +
+    ui.tile('Closed', cc ?? '—',
+      deltaAs(cc, pcc, whole, { label: vs }),
+      ratio != null ? `${ratio.toFixed(2)}× vs new` : '') +
+    // The share explains what 53 means; the monthly change is secondary,
+    // so it sits under it and drops a step in weight.
+    ui.tile('Reopened', ro ?? '—',
+      deltaAs(ro, pro, whole, { dim: true, label: vs }),
+      rr != null ? `${rr.toFixed(1)}% of new cases` : '',
+      'Reopen activity rate. Reopens may include follow-ups or new issues reported through an existing live chat conversation — not failed resolutions.',
+      true) +
+    ui.tile('Total workload', wl ?? '—',
+      deltaAs(wl, pwl, whole, { neutral: true, label: vs }), '',
+      'New incoming cases + reopened conversations. Activity, not unique conversations.') +
+    // Speed: direction has a clear meaning, so it keeps the colour.
+    ui.tile('First response', fmtMinutes(frt),
+      deltaAs(frt, pfrt, fmtMinSec, { lowerIsBetter: true, label: vs })) +
+    ui.tile('Resolution time', fmtHours(res),
+      deltaAs(res, pres, fmtHoursShort, { lowerIsBetter: true, label: vs }));
+
+  el('chanShare').textContent = get('chatPct', i) != null
+    ? `Chat share ${get('chatPct', i)}%` : '';
 
   const totals = m.chat.map((c, j) => c + m.email[j]);
   const cmax = Math.max(...totals) * 1.08;
@@ -355,6 +425,87 @@ function renderOps() {
   el('selfLines').innerHTML =
     ui.statLine('Knowledge Base views', get('kbViews', i)?.toLocaleString() ?? '—', dd('kbViews', '', false, 0)) +
     ui.statLine('Active users', get('activeUsers', i)?.toLocaleString() ?? '—', dd('activeUsers', '', false, 0));
+}
+
+// ---------------- backlog health ----------------
+/** Percentage in prose: 40% rather than 40.0%, one decimal when it earns it. */
+const pctText = n => (Math.abs(n - Math.round(n)) < 0.05 ? Math.round(n) : n.toFixed(1)) + '%';
+
+/**
+ * Backlog earns a "What moved" line only when the shift is material:
+ * a big enough absolute move, or a big enough percentage move that also
+ * clears an absolute floor. Without the floor, 10 → 12 would read as a
+ * 20% swing and crowd out something that matters.
+ */
+function backlogBullet(bl) {
+  if (!bl || !bl.prevEnding) return null;
+  const now = bl.ending.total, was = bl.prevEnding.total;
+  const d = now - was, abs = Math.abs(d);
+  const pct = was ? abs / was * 100 : 0;
+  const material = abs >= GOALS.backlogMoveAbs ||
+    (pct >= GOALS.backlogMovePct && abs >= GOALS.backlogMovePctFloor);
+  if (!material) return null;
+
+  const prev = bl.prevMonthFull || (bl.prevMonthLabel || '').split(' ')[0];
+  let s = `Backlog ${d < 0 ? 'decreased' : 'increased'} to ${now} cases, ` +
+    `${d < 0 ? 'down' : 'up'} ${abs} from ${prev}`;
+
+  // Name the concentration only when one category really dominates.
+  const top = bl.categories[0];
+  if (top && top.pct >= 30) {
+    s += `, with ${esc(top.name)} accounting for ${pctText(top.pct)} of the remaining backlog`;
+  }
+  return s + '.';
+}
+
+function renderBacklog(bl) {
+  const sec = el('backlogSection');
+  sec.style.display = bl ? '' : 'none';
+  if (!bl) return;
+
+  const e = bl.ending, pe = bl.prevEnding;
+  const share = n => (e.total ? (n / e.total * 100).toFixed(1) + '% of backlog' : '—');
+
+  // Lower is better here — the inverse of every other tile on this tab.
+  el('backlogTiles').innerHTML =
+    ui.tile('Backlog', e.total,
+      pe ? delta(e.total, pe.total, '', true, 0, 'vs ' + (bl.prevMonthLabel || '').split(' ')[0]) : '',
+      pe ? '' : 'no prior month on file') +
+    ui.tile('Open', e.open, '', share(e.open)) +
+    ui.tile('Snoozed', e.snoozed, '', share(e.snoozed));
+
+  el('backlogAsOf').textContent = 'Ending snapshot · ' + fmtDay(e.date);
+  el('backlogTrendNote').textContent = `Daily snapshots · ${bl.monthLabel}`;
+
+  // One snapshot is a valid month-end figure but not a trend: an average
+  // and a peak over a single day would read as analysis it isn't. The
+  // missing-day logic is untouched — those days stay absent, never zero.
+  const n = bl.snapshots;
+  el('backlogMicro').style.display = bl.hasTrend ? '' : 'none';
+  el('backlogChartbox').style.display = bl.hasTrend ? '' : 'none';
+  el('backlogTrendEmpty').style.display = bl.hasTrend ? 'none' : '';
+
+  if (bl.hasTrend) {
+    el('backlogMicro').innerHTML =
+      ui.micro('Avg. daily backlog', bl.avg, `across ${n} snapshots`) +
+      ui.micro('Peak backlog', bl.peak, bl.peakDay ? fmtDay(bl.peakDay.date) : '');
+    el('backlogCoverage').textContent = `Based on ${n} daily snapshots.`;
+  } else {
+    charts.destroyChart('backlog');
+    el('backlogMicro').innerHTML = '';
+    el('backlogTrendEmpty').textContent =
+      'Daily backlog trend unavailable — only one snapshot is available for this month.';
+    el('backlogCoverage').textContent = '';
+  }
+
+  el('backlogCatNote').textContent = bl.catDate
+    ? `Snapshot of ${fmtDay(bl.catDate)} · ${bl.catTotal} cases`
+    : 'No category snapshot';
+
+  const max = bl.categories.reduce((m, c) => Math.max(m, c.total), 1);
+  el('backlogCats').innerHTML = bl.categories.length
+    ? ui.backlogCategoryHead() + bl.categories.map(c => ui.backlogCategoryBar(c, max)).join('')
+    : `<p class="remarks-empty">No category snapshot for this month.</p>`;
 }
 
 // ---------------- go ----------------

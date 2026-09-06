@@ -23,12 +23,21 @@ export function fact({ label, value, sub, color }) {
   </div>`;
 }
 
-/** Compact metric tile (ops grid). */
-export function tile(label, value, deltaHtml) {
+/**
+ * Compact metric tile (ops grid). `sub` is a quieter second line under
+ * the delta — a ratio or a share that gives the figure context without
+ * earning a tile of its own; `subFirst` promotes it above the delta when
+ * the context explains the figure better than its monthly change does.
+ * `info` attaches a help affordance to the
+ * label rather than parking a methodology note on the page.
+ */
+export function tile(label, value, deltaHtml, subHtml, info, subFirst) {
+  const sub = subHtml ? `<span class="tile__sub">${subHtml}</span>` : '';
   return `<div class="tile">
-    <div class="tile__label">${label}</div>
+    <div class="tile__label"${info ? ` title="${esc(info)}"` : ''}>${label}${
+      info ? `<span class="tile__hint" aria-hidden="true">i</span>` : ''}</div>
     <div class="tile__value">${value}</div>
-    ${deltaHtml || ''}
+    ${subFirst ? sub + (deltaHtml || '') : (deltaHtml || '') + sub}
   </div>`;
 }
 
@@ -153,6 +162,45 @@ export function select(id, label, options, value) {
       ).join('')}
     </select>
   </label>`;
+}
+
+/**
+ * One backlog category row. Bar length is unresolved cases, split into
+ * open (accent) and snoozed (deep accent) so the stack still reads as
+ * one quantity rather than two competing series.
+ */
+export function backlogCategoryBar(c, max) {
+  const w = n => (n / max * 100).toFixed(1) + '%';
+  return `<div class="bcat">
+    <span class="bcat__name" title="${esc(c.name)}">${esc(c.name)}</span>
+    <span class="bcat__track">
+      <span class="bcat__open" style="width:${w(c.open)}"></span>
+      <span class="bcat__snoozed" style="width:${w(c.snoozed)}"></span>
+    </span>
+    <span class="bcat__n">${c.total}</span>
+    <span class="bcat__pct">${c.pct.toFixed(1)}%</span>
+    <span class="bcat__split">${c.open} open · ${c.snoozed} snoozed</span>
+  </div>`;
+}
+
+/** Column labels above the category rows. */
+export function backlogCategoryHead() {
+  return `<div class="bcat bcat--head">
+    <span>Category</span>
+    <span>Backlog</span>
+    <span class="bcat__n">Total</span>
+    <span class="bcat__pct">Share</span>
+    <span class="bcat__split">Open · snoozed</span>
+  </div>`;
+}
+
+/** Small secondary figure under a panel title (avg / peak backlog). */
+export function micro(label, value, sub) {
+  return `<div class="micro__item">
+    <span class="micro__label">${label}</span>
+    <span class="micro__value">${value}</span>
+    ${sub ? `<span class="micro__sub">${sub}</span>` : ''}
+  </div>`;
 }
 
 /** Table of detractor / neutral conversations. */

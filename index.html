@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Viz Flowics · Support CSAT</title>
+  <title>Viz Flowics · Support Performance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
@@ -14,8 +14,8 @@
   <!-- ================= TOP BAR ================= -->
   <header class="topbar">
     <div class="topbar__left">
-      <div class="topbar__kicker">Viz Flowics · Support</div>
-      <h1 class="topbar__title">Customer Satisfaction</h1>
+      <div class="topbar__kicker">Viz Flowics</div>
+      <h1 class="topbar__title">Support Performance</h1>
     </div>
     <div class="topbar__right">
       <span id="liveBadge" class="live"><span class="live__dot"></span>Live</span>
@@ -71,7 +71,16 @@
       </div>
     </section>
 
-    <!-- 3. What are customers saying? · 4. What needs attention? -->
+    <!-- 3. How are we performing historically? -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">CSAT and rated volume</h2>
+        <span class="panel__note">13-month trend</span>
+      </div>
+      <div class="chartbox"><canvas id="trendChart"></canvas></div>
+    </section>
+
+    <!-- 4. What are customers saying? · 5. What needs attention? -->
     <section class="cols">
       <div class="panel">
         <div class="panel__head">
@@ -89,15 +98,6 @@
         </div>
         <div id="attnList"></div>
       </div>
-    </section>
-
-    <!-- 5. How are we performing historically? -->
-    <section class="panel">
-      <div class="panel__head">
-        <h2 class="panel__title">CSAT and rated volume</h2>
-        <span class="panel__note">13-month trend</span>
-      </div>
-      <div class="chartbox"><canvas id="trendChart"></canvas></div>
     </section>
   </main>
 
@@ -122,10 +122,39 @@
       <div class="tiles" id="opsTiles"></div>
     </section>
 
+    <section id="backlogSection">
+      <div class="sechead">
+        <div class="kicker">Backlog health</div>
+        <span class="sechead__note" id="backlogAsOf"></span>
+      </div>
+      <div class="tiles tiles--kpi" id="backlogTiles"></div>
+
+      <div class="panel" style="margin-top:24px">
+        <div class="panel__head">
+          <h2 class="panel__title">Daily backlog trend</h2>
+          <span class="panel__note" id="backlogTrendNote">Daily snapshots</span>
+        </div>
+        <div class="micro" id="backlogMicro"></div>
+        <div class="chartbox chartbox--sm" id="backlogChartbox"><canvas id="backlogChart"></canvas></div>
+        <p class="chart-empty" id="backlogTrendEmpty" style="display:none"></p>
+        <p class="panel__foot" id="backlogCoverage"></p>
+      </div>
+
+      <div class="panel" style="margin-top:24px">
+        <div class="panel__head">
+          <h2 class="panel__title">Backlog by category</h2>
+          <span class="panel__note" id="backlogCatNote"></span>
+        </div>
+        <div class="bcats" id="backlogCats"></div>
+        <p class="panel__foot">Bar length is backlog · the lighter segment is open, the darker one snoozed.</p>
+      </div>
+    </section>
+
     <section class="panel">
       <div class="panel__head">
         <h2 class="panel__title">Volume by channel</h2>
-        <div class="legend" style="margin:0">
+        <span class="panel__note" id="chanShare" style="margin-left:auto"></span>
+        <div class="legend" style="margin:0 0 0 18px">
           <span class="legend__key"><span class="legend__swatch" style="background:var(--accent)"></span>Chat</span>
           <span class="legend__key"><span class="legend__swatch" style="background:var(--n700)"></span>Email</span>
         </div>
@@ -155,7 +184,7 @@
   </main>
 
   <footer class="footer">
-    <span>Viz Flowics Support · CSAT Dashboard</span>
+    <span>Viz Flowics Support · Performance Dashboard</span>
     <span id="footerTs"></span>
   </footer>
 

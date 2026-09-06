@@ -33,7 +33,18 @@ export const GOALS = {
   avgRating: 4.5,       // out of 5
   finCsatDropAlert: 15, // pts month-over-month drop that triggers alert
   finPanelShare: 15,    // % of rated volume Fin AI must reach to earn its own panel
-  topAgentMinRated: 5   // min ratings to qualify as top performer
+  topAgentMinRated: 5,  // min ratings to qualify as top performer
+
+  // Backlog only earns a "What moved" bullet when the shift is material.
+  // The percentage gate carries an absolute floor so 10 → 12 (+20%) does
+  // not read as a leadership signal.
+  backlogMoveAbs: 5,
+  backlogMovePct: 15,
+  backlogMovePctFloor: 3,
+
+  // Workload is activity, so it only earns narration on a real swing.
+  workloadMoveAbs: 20,
+  workloadMovePct: 10
 };
 
 export const REMARKS_PER_PAGE = [6, 10, 20];
