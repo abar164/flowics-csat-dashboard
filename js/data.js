@@ -60,6 +60,10 @@ export const MONTHS = [
   {
     "key": "2026-09",
     "label": "Sep 2026"
+  },
+  {
+    "key": "2026-10",
+    "label": "Oct 2026"
   }
 ];
 
@@ -78,7 +82,8 @@ export const OPS_DATA = {
     "2026-06",
     "2026-07",
     "2026-08",
-    "2026-09"
+    "2026-09",
+    "2026-10"
   ],
   "labels": [
     "Aug 2025",
@@ -94,7 +99,8 @@ export const OPS_DATA = {
     "Jun 2026",
     "Jul 2026",
     "Aug 2026",
-    "Sep 2026"
+    "Sep 2026",
+    "Oct 2026"
   ],
   "metrics": {
     "frt": [
@@ -111,7 +117,8 @@ export const OPS_DATA = {
       2.68,
       2.68,
       3.15,
-      5.83
+      5.83,
+      2.92
     ],
     "resTime": [
       5.77,
@@ -127,7 +134,8 @@ export const OPS_DATA = {
       3.82,
       4.23,
       3.62,
-      11.98
+      11.98,
+      1.75
     ],
     "newCases": [
       201,
@@ -143,7 +151,8 @@ export const OPS_DATA = {
       267,
       172,
       216,
-      168
+      168,
+      39
     ],
     "closedConv": [
       210,
@@ -159,7 +168,8 @@ export const OPS_DATA = {
       275,
       173,
       234,
-      176
+      176,
+      41
     ],
     "resRate": [
       1,
@@ -175,7 +185,8 @@ export const OPS_DATA = {
       1,
       1,
       1.1,
-      1
+      1,
+      1.1
     ],
     "email": [
       41,
@@ -191,7 +202,8 @@ export const OPS_DATA = {
       34,
       32,
       29,
-      30
+      30,
+      4
     ],
     "chat": [
       160,
@@ -207,7 +219,8 @@ export const OPS_DATA = {
       233,
       140,
       187,
-      138
+      138,
+      35
     ],
     "reopened": [
       45,
@@ -223,7 +236,8 @@ export const OPS_DATA = {
       60,
       33,
       53,
-      44
+      44,
+      11
     ],
     "workload": [
       246,
@@ -239,7 +253,8 @@ export const OPS_DATA = {
       327,
       205,
       269,
-      212
+      212,
+      50
     ],
     "reopenRate": [
       22.39,
@@ -255,7 +270,8 @@ export const OPS_DATA = {
       22.47,
       19.19,
       24.54,
-      26.2
+      26.19,
+      28.21
     ],
     "chatPct": [
       79.6,
@@ -271,7 +287,8 @@ export const OPS_DATA = {
       87.3,
       81.4,
       86.6,
-      82.1
+      82.1,
+      89.7
     ],
     "surveysSent": [
       150,
@@ -287,7 +304,8 @@ export const OPS_DATA = {
       210,
       115,
       167,
-      168
+      168,
+      17
     ],
     "convRated": [
       48,
@@ -303,7 +321,8 @@ export const OPS_DATA = {
       67,
       43,
       63,
-      34
+      34,
+      8
     ],
     "responseRate": [
       32,
@@ -319,7 +338,8 @@ export const OPS_DATA = {
       31.9,
       37.4,
       37.7,
-      20.2
+      20.2,
+      47.1
     ],
     "csatScore": [
       91.7,
@@ -335,6 +355,7 @@ export const OPS_DATA = {
       95.5,
       93.6,
       98.4,
+      100,
       100
     ],
     "kbViews": [
@@ -351,7 +372,8 @@ export const OPS_DATA = {
       1621,
       1488,
       1099,
-      1143
+      1143,
+      136
     ],
     "activeUsers": [
       null,
@@ -367,7 +389,8 @@ export const OPS_DATA = {
       1131,
       1069,
       1078,
-      1247
+      1247,
+      1153
     ]
   }
 };
@@ -1910,6 +1933,35 @@ export const DATA = {
         "customer": "Ashlie Olivenbaum"
       }
     ],
+    "detractors": []
+  },
+  "2026-10": {
+    "label": "Oct 2026",
+    "total": 8,
+    "positive": 8,
+    "negative": 0,
+    "fin": 0,
+    "avg": 4.75,
+    "csat": 100,
+    "agents": [
+      {
+        "name": "Andrés Barraza",
+        "total": 3,
+        "csat": 100,
+        "avg": 4.33
+      },
+      {
+        "name": "Emilio Ferraez",
+        "total": 5,
+        "csat": 100,
+        "avg": 5
+      }
+    ],
+    "ratings": {
+      "Amazing": 6,
+      "Great": 2
+    },
+    "remarks": [],
     "detractors": []
   }
 };
@@ -5113,6 +5165,12 @@ export const BACKLOG = {
         "open": 26,
         "snoozed": 5,
         "total": 31
+      },
+      {
+        "date": "2026-10-07",
+        "open": 30,
+        "snoozed": 4,
+        "total": 34
       }
     ],
     "categories": {
@@ -5413,6 +5471,56 @@ export const BACKLOG = {
           "Other",
           0,
           0,
+          0
+        ]
+      ],
+      "2026-10-07": [
+        [
+          "Technical Issue / Suspected Bug",
+          8,
+          5,
+          3
+        ],
+        [
+          "How-to / Configuration",
+          3,
+          3,
+          0
+        ],
+        [
+          "Integrations / API",
+          13,
+          12,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          3,
+          3,
+          0
+        ],
+        [
+          "Feature Request",
+          3,
+          3,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          3,
+          3,
+          0
+        ],
+        [
+          "Other",
+          1,
+          1,
           0
         ]
       ]
