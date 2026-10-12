@@ -322,7 +322,7 @@ export const OPS_DATA = {
       43,
       63,
       34,
-      8
+      12
     ],
     "responseRate": [
       32,
@@ -339,7 +339,7 @@ export const OPS_DATA = {
       37.4,
       37.7,
       20.2,
-      47.1
+      70.6
     ],
     "csatScore": [
       91.7,
@@ -1937,8 +1937,8 @@ export const DATA = {
   },
   "2026-10": {
     "label": "Oct 2026",
-    "total": 8,
-    "positive": 8,
+    "total": 12,
+    "positive": 12,
     "negative": 0,
     "fin": 0,
     "avg": 4.75,
@@ -1946,22 +1946,30 @@ export const DATA = {
     "agents": [
       {
         "name": "Andrés Barraza",
-        "total": 3,
+        "total": 4,
         "csat": 100,
-        "avg": 4.33
+        "avg": 4.5
       },
       {
         "name": "Emilio Ferraez",
-        "total": 5,
+        "total": 8,
         "csat": 100,
-        "avg": 5
+        "avg": 4.88
       }
     ],
     "ratings": {
-      "Amazing": 6,
-      "Great": 2
+      "Amazing": 9,
+      "Great": 3
     },
-    "remarks": [],
+    "remarks": [
+      {
+        "agent": "Emilio Ferraez",
+        "rating": "Amazing",
+        "remark": "amazing",
+        "company": "LinkedIn",
+        "customer": "Elias Avalos"
+      }
+    ],
     "detractors": []
   }
 };
@@ -5171,6 +5179,30 @@ export const BACKLOG = {
         "open": 30,
         "snoozed": 4,
         "total": 34
+      },
+      {
+        "date": "2026-10-08",
+        "open": 30,
+        "snoozed": 5,
+        "total": 35
+      },
+      {
+        "date": "2026-10-09",
+        "open": 31,
+        "snoozed": 5,
+        "total": 36
+      },
+      {
+        "date": "2026-10-10",
+        "open": 16,
+        "snoozed": 6,
+        "total": 22
+      },
+      {
+        "date": "2026-10-11",
+        "open": 16,
+        "snoozed": 6,
+        "total": 22
       }
     ],
     "categories": {
@@ -5522,6 +5554,206 @@ export const BACKLOG = {
           1,
           1,
           0
+        ]
+      ],
+      "2026-10-08": [
+        [
+          "Technical Issue / Suspected Bug",
+          8,
+          5,
+          3
+        ],
+        [
+          "How-to / Configuration",
+          3,
+          3,
+          0
+        ],
+        [
+          "Integrations / API",
+          12,
+          11,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          3,
+          2,
+          1
+        ],
+        [
+          "Feature Request",
+          2,
+          2,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          4,
+          4,
+          0
+        ],
+        [
+          "Other",
+          3,
+          3,
+          0
+        ]
+      ],
+      "2026-10-09": [
+        [
+          "Technical Issue / Suspected Bug",
+          2,
+          2,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          3,
+          3,
+          0
+        ],
+        [
+          "Integrations / API",
+          15,
+          11,
+          4
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          4,
+          3,
+          1
+        ],
+        [
+          "Feature Request",
+          4,
+          4,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          4,
+          4,
+          0
+        ],
+        [
+          "Other",
+          4,
+          4,
+          0
+        ]
+      ],
+      "2026-10-10": [
+        [
+          "Technical Issue / Suspected Bug",
+          6,
+          3,
+          3
+        ],
+        [
+          "How-to / Configuration",
+          4,
+          4,
+          0
+        ],
+        [
+          "Integrations / API",
+          7,
+          6,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          2,
+          1,
+          1
+        ],
+        [
+          "Feature Request",
+          1,
+          1,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          1,
+          1,
+          0
+        ],
+        [
+          "Other",
+          1,
+          0,
+          1
+        ]
+      ],
+      "2026-10-11": [
+        [
+          "Technical Issue / Suspected Bug",
+          7,
+          4,
+          3
+        ],
+        [
+          "How-to / Configuration",
+          1,
+          1,
+          0
+        ],
+        [
+          "Integrations / API",
+          7,
+          6,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          2,
+          1,
+          1
+        ],
+        [
+          "Feature Request",
+          1,
+          1,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          2,
+          2,
+          0
+        ],
+        [
+          "Other",
+          2,
+          1,
+          1
         ]
       ]
     }
