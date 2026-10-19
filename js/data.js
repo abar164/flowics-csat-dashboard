@@ -118,7 +118,7 @@ export const OPS_DATA = {
       2.68,
       3.15,
       5.83,
-      2.92
+      3.8
     ],
     "resTime": [
       5.77,
@@ -135,7 +135,7 @@ export const OPS_DATA = {
       4.23,
       3.62,
       11.98,
-      1.75
+      3.9
     ],
     "newCases": [
       201,
@@ -152,7 +152,7 @@ export const OPS_DATA = {
       172,
       216,
       168,
-      39
+      134
     ],
     "closedConv": [
       210,
@@ -169,7 +169,7 @@ export const OPS_DATA = {
       173,
       234,
       176,
-      41
+      151
     ],
     "resRate": [
       1,
@@ -203,7 +203,7 @@ export const OPS_DATA = {
       32,
       29,
       30,
-      4
+      20
     ],
     "chat": [
       160,
@@ -220,7 +220,7 @@ export const OPS_DATA = {
       140,
       187,
       138,
-      35
+      114
     ],
     "reopened": [
       45,
@@ -237,7 +237,7 @@ export const OPS_DATA = {
       33,
       53,
       44,
-      11
+      27
     ],
     "workload": [
       246,
@@ -254,7 +254,7 @@ export const OPS_DATA = {
       205,
       269,
       212,
-      50
+      161
     ],
     "reopenRate": [
       22.39,
@@ -271,7 +271,7 @@ export const OPS_DATA = {
       19.19,
       24.54,
       26.19,
-      28.21
+      20.15
     ],
     "chatPct": [
       79.6,
@@ -288,7 +288,7 @@ export const OPS_DATA = {
       81.4,
       86.6,
       82.1,
-      89.7
+      85.1
     ],
     "surveysSent": [
       150,
@@ -305,7 +305,7 @@ export const OPS_DATA = {
       115,
       167,
       168,
-      17
+      83
     ],
     "convRated": [
       48,
@@ -322,7 +322,7 @@ export const OPS_DATA = {
       43,
       63,
       34,
-      12
+      32
     ],
     "responseRate": [
       32,
@@ -339,7 +339,7 @@ export const OPS_DATA = {
       37.4,
       37.7,
       20.2,
-      70.6
+      38.6
     ],
     "csatScore": [
       91.7,
@@ -373,7 +373,7 @@ export const OPS_DATA = {
       1488,
       1099,
       1143,
-      136
+      416
     ],
     "activeUsers": [
       null,
@@ -390,7 +390,7 @@ export const OPS_DATA = {
       1069,
       1078,
       1247,
-      1153
+      992
     ]
   }
 };
@@ -1937,29 +1937,41 @@ export const DATA = {
   },
   "2026-10": {
     "label": "Oct 2026",
-    "total": 12,
-    "positive": 12,
+    "total": 32,
+    "positive": 32,
     "negative": 0,
-    "fin": 0,
-    "avg": 4.75,
+    "fin": 3,
+    "avg": 4.56,
     "csat": 100,
     "agents": [
       {
         "name": "Andrés Barraza",
-        "total": 4,
+        "total": 11,
         "csat": 100,
-        "avg": 4.5
+        "avg": 4.55
       },
       {
         "name": "Emilio Ferraez",
-        "total": 8,
+        "total": 16,
         "csat": 100,
-        "avg": 4.88
+        "avg": 4.69
+      },
+      {
+        "name": "Fin AI Agent",
+        "total": 3,
+        "csat": 100,
+        "avg": 4
+      },
+      {
+        "name": "Shivani Kundra",
+        "total": 2,
+        "csat": 100,
+        "avg": 5
       }
     ],
     "ratings": {
-      "Amazing": 9,
-      "Great": 3
+      "Amazing": 18,
+      "Great": 14
     },
     "remarks": [
       {
@@ -5203,6 +5215,48 @@ export const BACKLOG = {
         "open": 16,
         "snoozed": 6,
         "total": 22
+      },
+      {
+        "date": "2026-10-12",
+        "open": 17,
+        "snoozed": 8,
+        "total": 25
+      },
+      {
+        "date": "2026-10-13",
+        "open": 18,
+        "snoozed": 5,
+        "total": 23
+      },
+      {
+        "date": "2026-10-14",
+        "open": 12,
+        "snoozed": 4,
+        "total": 16
+      },
+      {
+        "date": "2026-10-15",
+        "open": 23,
+        "snoozed": 2,
+        "total": 25
+      },
+      {
+        "date": "2026-10-16",
+        "open": 28,
+        "snoozed": 2,
+        "total": 30
+      },
+      {
+        "date": "2026-10-17",
+        "open": 30,
+        "snoozed": 1,
+        "total": 31
+      },
+      {
+        "date": "2026-10-18",
+        "open": 25,
+        "snoozed": 1,
+        "total": 26
       }
     ],
     "categories": {
@@ -5754,6 +5808,356 @@ export const BACKLOG = {
           2,
           1,
           1
+        ]
+      ],
+      "2026-10-12": [
+        [
+          "Technical Issue / Suspected Bug",
+          3,
+          3,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          3,
+          3,
+          0
+        ],
+        [
+          "Integrations / API",
+          12,
+          7,
+          5
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          2,
+          1,
+          1
+        ],
+        [
+          "Feature Request",
+          0,
+          0,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          1,
+          1,
+          0
+        ],
+        [
+          "Other",
+          4,
+          2,
+          2
+        ]
+      ],
+      "2026-10-13": [
+        [
+          "Technical Issue / Suspected Bug",
+          5,
+          2,
+          3
+        ],
+        [
+          "How-to / Configuration",
+          1,
+          1,
+          0
+        ],
+        [
+          "Integrations / API",
+          10,
+          9,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          1,
+          1,
+          0
+        ],
+        [
+          "Feature Request",
+          1,
+          0,
+          1
+        ],
+        [
+          "Graphics / Graphic Package",
+          5,
+          5,
+          0
+        ],
+        [
+          "Other",
+          0,
+          0,
+          0
+        ]
+      ],
+      "2026-10-14": [
+        [
+          "Technical Issue / Suspected Bug",
+          4,
+          3,
+          1
+        ],
+        [
+          "How-to / Configuration",
+          3,
+          2,
+          1
+        ],
+        [
+          "Integrations / API",
+          6,
+          5,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          0,
+          0,
+          0
+        ],
+        [
+          "Feature Request",
+          2,
+          2,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          1,
+          0,
+          1
+        ],
+        [
+          "Other",
+          0,
+          0,
+          0
+        ]
+      ],
+      "2026-10-15": [
+        [
+          "Technical Issue / Suspected Bug",
+          5,
+          5,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          4,
+          4,
+          0
+        ],
+        [
+          "Integrations / API",
+          7,
+          6,
+          1
+        ],
+        [
+          "Account / Access",
+          1,
+          1,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          1,
+          1,
+          0
+        ],
+        [
+          "Feature Request",
+          1,
+          1,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          3,
+          2,
+          1
+        ],
+        [
+          "Other",
+          3,
+          3,
+          0
+        ]
+      ],
+      "2026-10-16": [
+        [
+          "Technical Issue / Suspected Bug",
+          6,
+          6,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          0,
+          0,
+          0
+        ],
+        [
+          "Integrations / API",
+          10,
+          9,
+          1
+        ],
+        [
+          "Account / Access",
+          1,
+          1,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          3,
+          3,
+          0
+        ],
+        [
+          "Feature Request",
+          2,
+          2,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          6,
+          5,
+          1
+        ],
+        [
+          "Other",
+          2,
+          2,
+          0
+        ]
+      ],
+      "2026-10-17": [
+        [
+          "Technical Issue / Suspected Bug",
+          8,
+          8,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          2,
+          2,
+          0
+        ],
+        [
+          "Integrations / API",
+          10,
+          10,
+          0
+        ],
+        [
+          "Account / Access",
+          3,
+          3,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          3,
+          3,
+          0
+        ],
+        [
+          "Feature Request",
+          1,
+          1,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          4,
+          3,
+          1
+        ],
+        [
+          "Other",
+          0,
+          0,
+          0
+        ]
+      ],
+      "2026-10-18": [
+        [
+          "Technical Issue / Suspected Bug",
+          6,
+          6,
+          0
+        ],
+        [
+          "How-to / Configuration",
+          4,
+          4,
+          0
+        ],
+        [
+          "Integrations / API",
+          7,
+          7,
+          0
+        ],
+        [
+          "Account / Access",
+          1,
+          1,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          2,
+          2,
+          0
+        ],
+        [
+          "Feature Request",
+          2,
+          2,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          2,
+          1,
+          1
+        ],
+        [
+          "Other",
+          2,
+          2,
+          0
         ]
       ]
     }
