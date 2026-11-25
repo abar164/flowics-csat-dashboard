@@ -7001,6 +7001,12 @@ export const BACKLOG = {
         "open": 6,
         "snoozed": 2,
         "total": 8
+      },
+      {
+        "date": "2026-11-24",
+        "open": 5,
+        "snoozed": 2,
+        "total": 7
       }
     ],
     "categories": {
@@ -8145,6 +8151,56 @@ export const BACKLOG = {
           "Graphics / Graphic Package",
           2,
           2,
+          0
+        ],
+        [
+          "Other",
+          0,
+          0,
+          0
+        ]
+      ],
+      "2026-11-24": [
+        [
+          "Technical Issue / Suspected Bug",
+          3,
+          2,
+          1
+        ],
+        [
+          "How-to / Configuration",
+          0,
+          0,
+          0
+        ],
+        [
+          "Integrations / API",
+          2,
+          1,
+          1
+        ],
+        [
+          "Account / Access",
+          0,
+          0,
+          0
+        ],
+        [
+          "Billing / Subscription",
+          2,
+          2,
+          0
+        ],
+        [
+          "Feature Request",
+          0,
+          0,
+          0
+        ],
+        [
+          "Graphics / Graphic Package",
+          0,
+          0,
           0
         ],
         [
